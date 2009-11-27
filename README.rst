@@ -63,6 +63,11 @@ up an observer thread and schedule an event stream::
   stream = Stream(callback, path)
   observer.schedule(stream)
 
+Streams can observe any number of paths; simply pass them as
+positional arguments (or using the ``*`` operator)::
+
+  stream = Stream(callback, *paths)
+
 To start the observer in its own thread, use the ``start`` method::
 
   observer.starts()
