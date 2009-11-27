@@ -53,6 +53,39 @@ class PathObservationTestCase(unittest.TestCase):
         f.close()
         self.assertEquals(events, [(path, 0)])
 
+    def test_single_file_added_multiple_streams(self):
+        events = []
+        def callback(*args):
+            events.append(args)
+
+        f, path = self._make_temporary()
+        from fsevents import Stream
+        stream1 = Stream(callback, path)
+        stream2 = Stream(callback, path)
+
+        from fsevents import Observer
+        observer = Observer()
+        observer.schedule(stream1)
+        observer.schedule(stream2)
+        observer.start()
+
+        # add single file
+        import time
+        while not observer.isAlive():
+            time.sleep(0.1)
+        time.sleep(0.1)
+        f.flush()
+        time.sleep(0.2)
+
+        # stop and join observer
+        observer.stop()
+        observer.unschedule(stream1)
+        observer.unschedule(stream2)
+        observer.join()
+
+        f.close()
+        self.assertEquals(events, [(path, 0), (path, 0)])
+
     def test_single_file_added_with_observer_unscheduled(self):
         events = []
         def callback(*args):
