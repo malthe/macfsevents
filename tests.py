@@ -41,6 +41,7 @@ class PathObservationTestCase(unittest.TestCase):
         import time
         while not observer.isAlive():
             time.sleep(0.1)
+        time.sleep(0.1)
         f.flush()
         time.sleep(0.2)
 
