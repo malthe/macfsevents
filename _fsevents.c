@@ -53,6 +53,7 @@ static PyObject* pyfsevents_loop(PyObject* self, PyObject* args) {
 
     /* allocate info and store thread state */
     PyObject* value = PyDict_GetItem(loops, thread);
+
     if (value == NULL) {
         CFRunLoopRef loop = CFRunLoopGetCurrent();
         value = PyCObject_FromVoidPtr((void*) loop, PyMem_Free);
@@ -147,6 +148,7 @@ static PyObject* pyfsevents_schedule(PyObject* self, PyObject* args) {
     info->stream = fsstream;
     info->loop = loop;
     info->state = PyThreadState_Get();
+    Py_INCREF(callback);
 
     /* start event streams */
     if (!FSEventStreamStart(fsstream)) {
