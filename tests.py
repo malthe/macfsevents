@@ -90,7 +90,7 @@ class PathObservationTestCase(unittest.TestCase):
             f.flush()
             g.flush()
             h.flush()
-            time.sleep(0.1)
+            time.sleep(1.0)
             self.assertEqual(sorted(events), sorted([(path1, 0), (path2, 0)]))
         finally:
             f.close()
