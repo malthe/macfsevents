@@ -1,6 +1,6 @@
 import unittest
 
-class PathObservationTestCase(unittest.TestCase):
+class BaseTestCase(unittest.TestCase):
     def setUp(self):
         self.tempdir = self._make_tempdir()
 
@@ -14,6 +14,7 @@ class PathObservationTestCase(unittest.TestCase):
         if directory is None:
             directory = self.tempdir
         f = tempfile.NamedTemporaryFile(dir=directory)
+        f.flush()
         path = os.path.realpath(os.path.dirname(f.name)).rstrip('/') + '/'
         return f, path
 
@@ -27,6 +28,7 @@ class PathObservationTestCase(unittest.TestCase):
         os.mkdir(tempdir)
         return tempdir
 
+class PathObservationTestCase(BaseTestCase):
     def test_single_file_added(self):
         events = []
         def callback(*args):
@@ -45,16 +47,15 @@ class PathObservationTestCase(unittest.TestCase):
         import time
         while not observer.isAlive():
             time.sleep(0.1)
+        del events[:]
+        f.close()
         time.sleep(0.1)
-        f.flush()
-        time.sleep(0.2)
 
         # stop and join observer
         observer.stop()
         observer.unschedule(stream)
         observer.join()
 
-        f.close()
         self.assertEquals(events, [(path, 0)])
 
     def test_multiple_files_added(self):
@@ -87,10 +88,11 @@ class PathObservationTestCase(unittest.TestCase):
         observer.schedule(stream)
 
         try:
-            f.flush()
-            g.flush()
-            h.flush()
-            time.sleep(1.0)
+            del events[:]
+            f.close()
+            g.close()
+            h.close()
+            time.sleep(0.2)
             self.assertEqual(sorted(events), sorted([(path1, 0), (path2, 0)]))
         finally:
             f.close()
@@ -125,7 +127,8 @@ class PathObservationTestCase(unittest.TestCase):
         while not observer.isAlive():
             time.sleep(0.1)
         time.sleep(0.1)
-        f.flush()
+        del events[:]
+        f.close()
         time.sleep(0.2)
 
         # stop and join observer
@@ -134,7 +137,6 @@ class PathObservationTestCase(unittest.TestCase):
         observer.unschedule(stream2)
         observer.join()
 
-        f.close()
         self.assertEquals(events, [(path, 0), (path, 0)])
 
     def test_single_file_added_with_observer_unscheduled(self):
@@ -157,14 +159,14 @@ class PathObservationTestCase(unittest.TestCase):
         observer.unschedule(stream)
 
         # add single file
-        f.flush()
-        time.sleep(0.2)
+        del events[:]
+        f.close()
+        time.sleep(0.1)
 
         # stop and join observer
         observer.stop()
         observer.join()
 
-        f.close()
         self.assertEquals(events, [])
 
     def test_single_file_added_with_observer_rescheduled(self):
@@ -189,14 +191,14 @@ class PathObservationTestCase(unittest.TestCase):
         observer.schedule(stream)
 
         # add single file
-        f.flush()
+        del events[:]
+        f.close()
         time.sleep(0.2)
 
         # stop and join observer
         observer.stop()
         observer.join()
 
-        f.close()
         self.assertEquals(events, [(path, 0)])
 
     def test_single_file_added_to_subdirectory(self):
@@ -208,8 +210,6 @@ class PathObservationTestCase(unittest.TestCase):
         directory = self._make_tempdir()
         subdirectory = os.path.realpath(os.path.join(directory, 'subdir')) + '/'
         os.mkdir(subdirectory)
-        import time
-        time.sleep(1)
         f, path = self._make_temporary(subdirectory)
 
         try:
@@ -225,7 +225,8 @@ class PathObservationTestCase(unittest.TestCase):
             import time
             while not observer.isAlive():
                 time.sleep(0.1)
-            f.flush()
+            del events[:]
+            f.close()
             time.sleep(0.2)
 
             # stop and join observer
@@ -235,7 +236,6 @@ class PathObservationTestCase(unittest.TestCase):
 
             self.assertEquals(events, [(subdirectory, 0)])
         finally:
-            f.close()
             os.rmdir(subdirectory)
             os.rmdir(directory)
 
@@ -257,7 +257,8 @@ class PathObservationTestCase(unittest.TestCase):
         import time
         while not observer.isAlive():
             time.sleep(0.1)
-        f.flush()
+        del events[:]
+        f.close()
         time.sleep(0.2)
 
         # stop and join observer
@@ -265,7 +266,6 @@ class PathObservationTestCase(unittest.TestCase):
         observer.stop()
         observer.join()
 
-        f.close()
         self.assertEquals(events, [(path, 0)])
 
     def test_start_then_watch(self):
@@ -286,7 +286,8 @@ class PathObservationTestCase(unittest.TestCase):
         import time
         while not observer.isAlive():
             time.sleep(0.1)
-        f.flush()
+        del events[:]
+        f.close()
         time.sleep(0.2)
 
         # stop and join observer
@@ -294,7 +295,6 @@ class PathObservationTestCase(unittest.TestCase):
         observer.unschedule(stream)
         observer.join()
 
-        f.close()
         self.assertEquals(events, [(path, 0)])
 
     def test_start_no_watch(self):
@@ -312,13 +312,13 @@ class PathObservationTestCase(unittest.TestCase):
         import time
         while not observer.isAlive():
             time.sleep(0.1)
-        f.flush()
+        del events[:]
+        f.close()
         time.sleep(0.2)
 
         # stop and join observer
         observer.stop()
         observer.join()
 
-        f.close()
         self.assertEquals(events, [])
 
