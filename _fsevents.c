@@ -27,19 +27,35 @@ static void handler(FSEventStreamRef stream,
     PyThreadState *_save;
     _save = PyThreadState_Swap(info->state);
 
-    /* for each event, fire the callback */
-    int i;
-    for (i=0; i < numEvents; i++) {
-        if (PyObject_CallFunction(info->callback, "si", eventPaths[i], 
-                                  eventMasks[i]) == NULL) {
-            /* may can return NULL if an exception is raised */
-            if (!PyErr_Occurred())
-                PyErr_SetString(PyExc_ValueError, callback_error_msg);
+    /* convert event data to Python objects */
+    PyObject *eventPathList = PyList_New(numEvents);
+    PyObject *eventMaskList = PyList_New(numEvents);
+    if ((!eventPathList) || (!eventMaskList))
+        return NULL;
 
-            /* stop listening */
-            CFRunLoopStop(info->loop);
+    int i;
+    for (i = 0; i < numEvents; i++) {
+        PyObject *str = PyString_FromString(eventPaths[i]);
+        PyObject *num = PyInt_FromLong(eventMasks[i]);
+        if ((!num) || (!str)) {
+            Py_DECREF(eventPathList);
+            Py_DECREF(eventMaskList);
+            return NULL;
         }
+        PyList_SET_ITEM(eventPathList, i, str);
+        PyList_SET_ITEM(eventMaskList, i, num);
     }
+
+    if (PyObject_CallFunction(info->callback, "OO", eventPathList,
+                              eventMaskList) == NULL) {
+        /* may can return NULL if an exception is raised */
+        if (!PyErr_Occurred())
+            PyErr_SetString(PyExc_ValueError, callback_error_msg);
+
+        /* stop listening */
+        CFRunLoopStop(info->loop);
+    }
+
     PyThreadState_Swap(_save);
     PyEval_ReleaseLock();
 }

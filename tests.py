@@ -210,7 +210,8 @@ class PathObservationTestCase(BaseTestCase):
         directory = self._make_tempdir()
         subdirectory = os.path.realpath(os.path.join(directory, 'subdir')) + '/'
         os.mkdir(subdirectory)
-        f, path = self._make_temporary(subdirectory)
+        import time
+        time.sleep(0.1)
 
         try:
             from fsevents import Stream
@@ -222,10 +223,11 @@ class PathObservationTestCase(BaseTestCase):
             observer.start()
 
             # add single file
-            import time
             while not observer.isAlive():
                 time.sleep(0.1)
             del events[:]
+            f = open(os.path.join(subdirectory, "test"), "w")
+            f.write("abc")
             f.close()
             time.sleep(0.2)
 
@@ -234,8 +236,10 @@ class PathObservationTestCase(BaseTestCase):
             observer.unschedule(stream)
             observer.join()
 
+            self.assertEquals(len(events), 1)
             self.assertEquals(events, [(subdirectory, 0)])
         finally:
+            os.unlink(f.name)
             os.rmdir(subdirectory)
             os.rmdir(directory)
 
@@ -322,3 +326,159 @@ class PathObservationTestCase(BaseTestCase):
 
         self.assertEquals(events, [])
 
+class FileObservationTestCase(BaseTestCase):
+    def test_single_file_created(self):
+        events = []
+        def callback(event):
+            events.append(event)
+
+        from fsevents import Stream
+        stream = Stream(callback, self.tempdir, file_events=True)
+
+        from fsevents import Observer
+        observer = Observer()
+        observer.schedule(stream)
+        observer.start()
+
+        # add single file
+        import time
+        while not observer.isAlive():
+            time.sleep(0.1)
+        del events[:]
+        time.sleep(0.1)
+        import os
+        f = open(os.path.join(self.tempdir, "test"), "w")
+        f.write("abc")
+        f.flush()
+        f.close()
+        time.sleep(0.1)
+
+        # stop and join observer
+        observer.stop()
+        observer.unschedule(stream)
+        observer.join()
+
+        os.unlink(f.name)
+        from fsevents import IN_CREATE
+        self.assertEquals(len(events), 1)
+        self.assertEquals(events[0].mask, IN_CREATE)
+        self.assertEquals(events[0].name, os.path.realpath(f.name))
+
+    def test_single_file_deleted(self):
+        events = []
+        def callback(event):
+            events.append(event)
+
+        import os
+        f = open(os.path.join(self.tempdir, "test"), "w")
+        f.write("abc")
+        f.flush()
+        f.close()
+        from fsevents import Stream
+        stream = Stream(callback, self.tempdir, file_events=True)
+
+        from fsevents import Observer
+        observer = Observer()
+        observer.schedule(stream)
+        observer.start()
+
+        # add single file
+        import time
+        while not observer.isAlive():
+            time.sleep(0.1)
+        del events[:]
+        time.sleep(2.1)
+        os.unlink(f.name)
+        time.sleep(0.1)
+
+        # stop and join observer
+        observer.stop()
+        observer.unschedule(stream)
+        observer.join()
+
+        from fsevents import IN_DELETE
+        self.assertEquals(len(events), 1)
+        self.assertEquals(events[0].mask, IN_DELETE)
+        self.assertEquals(events[0].name, os.path.realpath(f.name))
+
+    def test_single_file_moved(self):
+        events = []
+        def callback(event):
+            events.append(event)
+
+        import os
+        f = open(os.path.join(self.tempdir, "test"), "w")
+        f.write("abc")
+        f.flush()
+        f.close()
+        from fsevents import Stream
+        stream = Stream(callback, self.tempdir, file_events=True)
+
+        from fsevents import Observer
+        observer = Observer()
+        observer.schedule(stream)
+        observer.start()
+
+        # add single file
+        import time
+        while not observer.isAlive():
+            time.sleep(0.1)
+        del events[:]
+        time.sleep(2.1)
+        new = "%s.new" % f.name
+        os.rename(f.name, new)
+        time.sleep(0.1)
+
+        # stop and join observer
+        observer.stop()
+        observer.unschedule(stream)
+        observer.join()
+
+        os.unlink(new)
+        from fsevents import IN_MOVED_FROM
+        from fsevents import IN_MOVED_TO
+        self.assertEquals(len(events), 2)
+        self.assertEquals(events[0].mask, IN_MOVED_FROM)
+        self.assertEquals(events[0].name, os.path.realpath(f.name))
+        self.assertEquals(events[1].mask, IN_MOVED_TO)
+        self.assertEquals(events[1].name, os.path.realpath(new))
+        self.assertEquals(events[0].cookie, events[1].cookie)
+
+    def test_single_file_modified(self):
+        events = []
+        def callback(event):
+            events.append(event)
+
+        import os
+        f = open(os.path.join(self.tempdir, "test"), "w")
+        f.write("abc")
+        f.flush()
+        from fsevents import Stream
+        stream = Stream(callback, self.tempdir, file_events=True)
+
+        from fsevents import Observer
+        observer = Observer()
+        observer.schedule(stream)
+        observer.start()
+
+        # add single file
+        import time
+        while not observer.isAlive():
+            time.sleep(0.1)
+        del events[:]
+        time.sleep(2.1)
+        f.write("abc")
+        f.flush()
+        f.close()
+        time.sleep(0.1)
+
+        # stop and join observer
+        observer.stop()
+        observer.unschedule(stream)
+        observer.join()
+
+        os.unlink(f.name)
+        from fsevents import IN_MODIFY
+        self.assertEquals(len(events), 1)
+        self.assertEquals(events[0].mask, IN_MODIFY)
+        self.assertEquals(events[0].name, os.path.realpath(f.name))

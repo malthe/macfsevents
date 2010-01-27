@@ -38,8 +38,9 @@ with the ``FSEvents`` API:
 These issues have been addressed in :mod:`MacFSEvents`. The library
 provides a clean API and has full test coverage.
 
-Note that :mod:`pyfsevents` has code to support the observation of
-file descriptors. This functionality is on the to-do list.
+Note that :mod:`pyfsevents` has bindings to the file descriptor
+observation primitives. This is not currently implemented by the
+present library.
 
 License
 -------
@@ -91,5 +92,31 @@ While the observer thread will automatically join your main thread at
 this point, it doesn't hurt to be explicit about this::
 
   observer.join()
+
+We often want to know about events on a file level; to receive file
+events instead of path events, pass in ``file_events=True`` to the
+stream constructor::
+
+  def callback(event):
+      ...
+
+  stream = Stream(callback, path, file_events=True)
+
+The event object mimick the file events of the ``inotify`` kernel
+extension available in newer linux kernels. It has the following
+attributes:
+
+``mask``
+   The mask field is a bitmask representing the event that occurred.
+
+``cookie``
+   The cookie field is a unique identifier linking together two related but separate events. It is used to link together an ``IN_MOVED_FROM`` and an ``IN_MOVED_TO`` event.
+
+``name``
+   The name field contains the name of the object to which the event occurred. This is the absolute filename.
+
+Note that the logic to implement file events is implemented in Python;
+a snapshot of the observed file system hierarchies is maintained and
+used to monitor file events.
 
 .. [#] See `FSEventStreamEventFlags <http://developer.apple.com/mac/library/documentation/Darwin/Reference/FSEvents_Ref/FSEvents_h/index.html#//apple_ref/c/tag/FSEventStreamEventFlags>`_ for a reference. To check for a particular mask, use the *bitwise and* operator ``&``.

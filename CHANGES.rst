@@ -3,6 +3,8 @@ Changelog
 
 In next release...
 
+- Added support for file event monitoring.
+
 - Fixed reference counting bug which could result in a segmentation
   fault.
 
