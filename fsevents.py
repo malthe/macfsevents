@@ -180,3 +180,8 @@ class FileEventCallback(object):
                     continue
             for directory in dirs:
                 refs[os.path.join(root, directory)] = {}
+
+        if os.path.isdir(path):
+            refs[os.path.join(root, path)] = {}
+            for name in os.listdir(os.path.join(root, path)):
+                refs[path][name] = os.stat(os.path.join(path, name))

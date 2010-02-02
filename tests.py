@@ -482,3 +482,39 @@ class FileObservationTestCase(BaseTestCase):
         self.assertEquals(len(events), 1)
         self.assertEquals(events[0].mask, IN_MODIFY)
         self.assertEquals(events[0].name, os.path.realpath(f.name))
+
+    def test_existing_directories_are_not_reported(self):
+        import os
+        from fsevents import Stream, Observer
+
+        events = []
+        def callback(event):
+            events.append(event)
+
+        stream = Stream(callback, self.tempdir, file_events=True)
+        new1 = os.path.join(self.tempdir, "newdir1")
+        new2 = os.path.join(self.tempdir, "newdir2")
+        os.mkdir(new1)
+        observer = Observer()
+        observer.schedule(stream)
+        observer.start()
+
+        import time
+        while not observer.isAlive():
+            time.sleep(0.1)
+        del events[:]
+        time.sleep(1)
+        os.mkdir(new2)
+        try:
+            time.sleep(1.1)
+            observer.stop()
+            observer.unschedule(stream)
+            observer.join()
+
+            from fsevents import IN_CREATE
+            self.assertEquals(len(events), 1)
+            self.assertEquals(events[0].mask, IN_CREATE)
+            self.assertEquals(events[0].name, os.path.realpath(new2))
+        finally:
+            os.rmdir(new1)
+            os.rmdir(new2)
