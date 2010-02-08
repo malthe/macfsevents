@@ -129,12 +129,12 @@ class FileEventCallback(object):
                 (name, os.stat(os.path.join(path, name)))
                 for name in os.listdir(path))
 
-            existing = set(current)
+            observed = set(current)
 
             for name, snap_stat in snapshot.items():
                 filename = os.path.join(path, name)
 
-                if name in existing:
+                if name in observed:
                     stat = os.stat(filename)
                     if stat.st_mtime > snap_stat.st_mtime:
                         events.append(FileEvent(IN_MODIFY, None, filename))
@@ -143,9 +143,9 @@ class FileEventCallback(object):
                     deleted[snap_stat.st_ino] = event
                     events.append(event)
 
-                existing.discard(name)
+                observed.discard(name)
 
-            for name in existing:
+            for name in observed:
                 stat = current[name]
                 filename = os.path.join(path, name)
 
