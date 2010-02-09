@@ -125,9 +125,13 @@ class FileEventCallback(object):
         for path in paths:
             path = path.rstrip('/')
             snapshot = self.snapshots[path]
-            current = dict(
-                (name, os.stat(os.path.join(path, name)))
-                for name in os.listdir(path))
+
+            current = {}
+            for name in os.listdir(path):
+                try:
+                    current[name] = os.stat(os.path.join(path, name))
+                except OSError:
+                    pass
 
             observed = set(current)
 
@@ -135,15 +139,14 @@ class FileEventCallback(object):
                 filename = os.path.join(path, name)
 
                 if name in observed:
-                    stat = os.stat(filename)
+                    stat = current[name]
                     if stat.st_mtime > snap_stat.st_mtime:
                         events.append(FileEvent(IN_MODIFY, None, filename))
+                    observed.discard(name)
                 else:
                     event = FileEvent(IN_DELETE, None, filename)
                     deleted[snap_stat.st_ino] = event
                     events.append(event)
-
-                observed.discard(name)
 
             for name in observed:
                 stat = current[name]
