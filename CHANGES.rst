@@ -1,7 +1,8 @@
 Changelog
 =========
 
-In next release...
+0.2 (2010-04-26)
+----------------
 
 - Fixed issue where existing directories would be reported along with
   a newly created one [marcboeker].
