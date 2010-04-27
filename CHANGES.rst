@@ -1,6 +1,10 @@
 Changelog
 =========
 
+In next release...
+
+- Fixed an import issue [andymacp].
+
 0.2 (2010-04-26)
 ----------------
 

@@ -208,6 +208,7 @@ static PyMethodDef methods[] = {
     {"stop", pyfsevents_stop, METH_O, NULL},
     {"schedule", pyfsevents_schedule, METH_VARARGS, NULL},
     {"unschedule", pyfsevents_unschedule, METH_O, NULL},
+    {NULL},
 };
 
 static char doc[] = "Low-level FSEvent interface.";
