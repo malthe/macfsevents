@@ -1,6 +1,11 @@
 Changelog
 =========
 
+In next release...
+
+- Fixed an issue where the addition of a new directory would crash the
+  program when using file event monitoring [andymacp].
+
 0.2.1 (2010-04-27)
 ------------------
 

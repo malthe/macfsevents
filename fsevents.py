@@ -161,6 +161,9 @@ class FileEventCallback(object):
                 else:
                     event = FileEvent(IN_CREATE, None, filename)
 
+                if os.path.isdir(filename):
+                    self.snapshot(filename)
+
                 events.append(event)
 
             snapshot.clear()
