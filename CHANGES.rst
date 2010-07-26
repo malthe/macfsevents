@@ -1,7 +1,7 @@
 Changelog
 =========
 
-In next release...
+- Python 2.4 compatibility [howitz]
 
 - Fixed an issue where the addition of a new directory would crash the
   program when using file event monitoring [andymacp].
