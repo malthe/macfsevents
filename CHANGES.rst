@@ -1,6 +1,14 @@
 Changelog
 =========
 
+0.2.3 (2010-07-27)
+------------------
+
+- Fixed broken release.
+
+0.2.2 (2010-07-26)
+------------------
+
 - Python 2.4 compatibility [howitz]
 
 - Fixed an issue where the addition of a new directory would crash the
