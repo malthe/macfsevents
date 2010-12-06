@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.2.4 (2010-12-06)
+------------------
+
+- Prevent crashes on recursive folder delete and multiple folder add.
+  [totolici].
+
 0.2.3 (2010-07-27)
 ------------------
 
