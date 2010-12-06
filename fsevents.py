@@ -122,16 +122,20 @@ class FileEventCallback(object):
         events = []
         deleted = {}
 
-        for path in paths:
+        for path in sorted(paths):
             path = path.rstrip('/')
             snapshot = self.snapshots[path]
 
             current = {}
-            for name in os.listdir(path):
-                try:
-                    current[name] = os.stat(os.path.join(path, name))
-                except OSError:
-                    pass
+            try:
+                for name in os.listdir(path):
+                    try:
+                        current[name] = os.stat(os.path.join(path, name))
+                    except OSError:
+                        pass
+            except OSError:
+                # recursive delete causes problems with path being non-existent
+                pass
 
             observed = set(current)
 
