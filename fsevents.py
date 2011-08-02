@@ -194,4 +194,7 @@ class FileEventCallback(object):
         if os.path.isdir(path):
             refs[os.path.join(root, path)] = {}
             for name in os.listdir(os.path.join(root, path)):
-                refs[path][name] = os.stat(os.path.join(path, name))
+                try:
+                    refs[path][name] = os.stat(os.path.join(path, name))
+                except OSError:
+                    pass
