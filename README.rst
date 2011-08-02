@@ -57,7 +57,7 @@ up an observer thread and schedule an event stream::
   observer = Observer()
   observer.start()
 
-  def callback(subpath, mask):
+  def callback(FileEvent):
       ...
 
   from fsevents import Stream
@@ -78,9 +78,11 @@ To start the observer in the current thread, use the ``run`` method
 
   observer.run()
 
-The callback function will be called when an event occurs. The
-``subpath`` parameter contains the path at which the event happened (may
-be a subdirectory) while ``mask`` parameter is the event mask [#]_.
+The callback function will be called when an event occurs. A
+``FileEvent`` instance is passed to the callback and has 3 attributes:
+``mask``, ``cookie`` and ``name``. ``name`` parameter contains the path
+at which the event happened (may be a subdirectory) while ``mask``
+parameter is the event mask [#]_.
 
 To stop observation, simply unschedule the stream and stop the
 observer::
