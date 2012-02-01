@@ -1,7 +1,8 @@
 Changelog
 =========
 
-In next release.
+0.2.5 (2012-02-01)
+------------------
 
 - Ignore files that don't exist while recursing.
   [bobveznat]
