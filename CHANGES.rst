@@ -1,6 +1,11 @@
 Changelog
 =========
 
+In next release.
+
+- Ignore files that don't exist while recursing.
+  [bobveznat]
+
 0.2.4 (2010-12-06)
 ------------------
 
