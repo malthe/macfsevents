@@ -37,7 +37,7 @@ static void handler(FSEventStreamRef stream,
     PyObject *eventPathList = PyList_New(numEvents);
     PyObject *eventMaskList = PyList_New(numEvents);
     if ((!eventPathList) || (!eventMaskList))
-        return NULL;
+        return;
 
     int i;
     for (i = 0; i < numEvents; i++) {
@@ -46,7 +46,7 @@ static void handler(FSEventStreamRef stream,
         if ((!num) || (!str)) {
             Py_DECREF(eventPathList);
             Py_DECREF(eventMaskList);
-            return NULL;
+            return;
         }
         PyList_SET_ITEM(eventPathList, i, str);
         PyList_SET_ITEM(eventMaskList, i, num);

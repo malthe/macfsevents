@@ -1,6 +1,11 @@
 Changelog
 =========
 
+In next release ...
+
+- Fixed compilation problen on newer platforms.
+  [nsfmc]
+
 0.2.5 (2012-02-01)
 ------------------
 
