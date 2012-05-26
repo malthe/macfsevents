@@ -146,6 +146,8 @@ class FileEventCallback(object):
                     stat = current[name]
                     if stat.st_mtime > snap_stat.st_mtime:
                         events.append(FileEvent(IN_MODIFY, None, filename))
+                    elif stat.st_ctime > snap_stat.st_ctime:
+                        events.append(FileEvent(IN_ATTRIB, None, filename))
                     observed.discard(name)
                 else:
                     event = FileEvent(IN_DELETE, None, filename)
