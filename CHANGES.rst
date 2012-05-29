@@ -1,6 +1,9 @@
 Changelog
 =========
 
+- Added support for IN_ATTRIB.
+  [thomasst]
+
 0.2.6 (2012-03-17)
 ------------------
 
