@@ -130,7 +130,7 @@ class FileEventCallback(object):
             try:
                 for name in os.listdir(path):
                     try:
-                        current[name] = os.stat(os.path.join(path, name))
+                        current[name] = os.lstat(os.path.join(path, name))
                     except OSError:
                         pass
             except OSError:
@@ -187,7 +187,7 @@ class FileEventCallback(object):
             entry = refs[root]
             for filename in files:
                 try:
-                    entry[filename] = os.stat(os.path.join(root, filename))
+                    entry[filename] = os.lstat(os.path.join(root, filename))
                 except OSError:
                     continue
             for directory in dirs:
@@ -197,6 +197,6 @@ class FileEventCallback(object):
             refs[os.path.join(root, path)] = {}
             for name in os.listdir(os.path.join(root, path)):
                 try:
-                    refs[path][name] = os.stat(os.path.join(path, name))
+                    refs[path][name] = os.lstat(os.path.join(path, name))
                 except OSError:
                     pass
