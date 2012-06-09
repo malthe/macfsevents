@@ -130,7 +130,7 @@ class FileEventCallback(object):
             try:
                 for name in os.listdir(path):
                     try:
-                        current[name] = os.stat(os.path.join(path, name))
+                        current[name] = os.lstat(os.path.join(path, name))
                     except OSError:
                         pass
             except OSError:
@@ -181,22 +181,12 @@ class FileEventCallback(object):
     def snapshot(self, path):
         path = os.path.realpath(path)
         refs = self.snapshots
-        refs[path] = {}
 
         for root, dirs, files in os.walk(path):
+            refs[root] = {}
             entry = refs[root]
-            for filename in files:
+            for obj in files + dirs:
                 try:
-                    entry[filename] = os.stat(os.path.join(root, filename))
+                    entry[obj] = os.lstat(os.path.join(root, obj))
                 except OSError:
                     continue
-            for directory in dirs:
-                refs[os.path.join(root, directory)] = {}
-
-        if os.path.isdir(path):
-            refs[os.path.join(root, path)] = {}
-            for name in os.listdir(os.path.join(root, path)):
-                try:
-                    refs[path][name] = os.stat(os.path.join(path, name))
-                except OSError:
-                    pass
