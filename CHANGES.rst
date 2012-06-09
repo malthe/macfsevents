@@ -1,6 +1,16 @@
 Changelog
 =========
 
+In next release ...
+
+Bugfixes:
+
+- Fix recursive snapshot.
+  [thomasst]
+
+- Use os.lstat instead of os.stat to correctly detect symlinks.
+  [thomasst]
+
 0.2.7 (2012-05-29)
 ------------------
 
