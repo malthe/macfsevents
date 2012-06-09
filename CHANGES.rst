@@ -1,7 +1,8 @@
 Changelog
 =========
 
-In next release ...
+0.2.8 (2012-06-09)
+------------------
 
 Bugfixes:
 
