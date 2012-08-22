@@ -23,7 +23,7 @@ def logger_init():
     log = logging.getLogger("fsevents")
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(
-        logging.Formatter("[%(asctime)s %(name) s%(levelname)s] %(message)s"))
+        logging.Formatter("[%(asctime)s %(name)s %(levelname)s] %(message)s"))
     log.addHandler(console_handler)
     log.setLevel(20)
     return log
@@ -187,7 +187,6 @@ class FileEventCallback(object):
                 pass
 
             observed = set(current)
-
             for name, snap_stat in snapshot.items():
                 filename = os.path.join(path, name)
 
@@ -196,20 +195,20 @@ class FileEventCallback(object):
                     stat = current[name]
                     if stat.st_mtime != snap_stat.st_mtime:
                         event = FileEvent(IN_MODIFY, None, filename)
-                        events.append(event)
                         log.debug('Appending event "%s"', event)
+                        events.append(event)
                         if not mask & FSE_MODIFIED_FLAG:
                             log.warn("No matching flag for detected modify")
                     elif stat.st_ctime > snap_stat.st_ctime:
                         event = FileEvent(IN_ATTRIB, None, filename)
-                        events.append(event)
                         log.debug('Appending event "%s"', event)
+                        events.append(event)
                     observed.discard(name)
                 else:
                     event = FileEvent(IN_DELETE, None, filename)
                     deleted[snap_stat.st_ino] = event
-                    events.append(event)
                     log.debug('Appending event "%s"', event)
+                    events.append(event)
                     if ((not mask & FSE_REMOVED_FLAG) and
                             (not mask & FSE_RENAMED_FLAG)):
                         log.warn("delete detected with no "
@@ -226,20 +225,24 @@ class FileEventCallback(object):
                     event.cookie = self.cookie
                     moved_to_event = FileEvent(IN_MOVED_TO, self.cookie,
                             filename)
-                    events.append(moved_to_event)
                     log.debug('Appending event "%s"', event)
+                    events.append(moved_to_event)
                     if not mask & FSE_RENAMED_FLAG:
                         log.warn('Rename detected without matching flag')
                 else:
                     in_create_event = FileEvent(IN_CREATE, None, filename)
                     log.debug('Appending event "%s"', in_create_event)
                     events.append(in_create_event)
-                    if mask & FSE_MODIFIED_FLAG:
-                        modified_event = FileEvent(IN_MODIFY, None, filename)
-                        events.append(modified_event)
+                    modified_event = FileEvent(IN_MODIFY, None, filename)
+                    log.debug('Appending event "%s"', modified_event)
+                    events.append(modified_event)
+
+                    if not mask & FSE_MODIFIED_FLAG:
+                        log.debug('Adding IN_MODIFY event when the flag was'
+                                  ' missing. Possible reason was a copy.')
 
                     if not mask & FSE_CREATED_FLAG:
-                        log.warn("Create detected from snapshot",
+                        log.warn("Create detected from snapshot"
                                  "but event is not marked as create")
 
                 if os.path.isdir(filename):

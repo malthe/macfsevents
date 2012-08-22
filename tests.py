@@ -137,7 +137,6 @@ class PathObservationTestCase(BaseTestCase):
         observer.unschedule(stream1)
         observer.unschedule(stream2)
         observer.join()
-
         self.assertEquals(events[0][0], path)
         self.assertEquals(events[1][0], path)
 
@@ -579,11 +578,15 @@ class FileObservationTestCase(BaseTestCase):
 
         os.unlink(f.name)
         from fsevents import IN_CREATE, IN_MODIFY
-        self.assertEquals(len(events), 2)
+        self.assertEquals(len(events), 3)
+        # assert events related to the creations
         self.assertEquals(events[0].mask, IN_CREATE)
         self.assertEquals(events[0].name, os.path.realpath(f.name))
         self.assertEquals(events[1].mask, IN_MODIFY)
         self.assertEquals(events[1].name, os.path.realpath(f.name))
+        # assert events related to the modify
+        self.assertEquals(events[2].mask, IN_MODIFY)
+        self.assertEquals(events[2].name, os.path.realpath(f.name))
 
     def test_single_directory_deleted(self):
         events = []
@@ -655,10 +658,112 @@ class FileObservationTestCase(BaseTestCase):
             observer.unschedule(stream)
             observer.join()
 
-            from fsevents import IN_CREATE
-            self.assertEquals(len(events), 1)
+            from fsevents import IN_CREATE, IN_MODIFY
+            self.assertEquals(len(events), 2)
             self.assertEquals(events[0].mask, IN_CREATE)
             self.assertEquals(events[0].name, os.path.realpath(new2))
+            self.assertEquals(events[1].mask, IN_MODIFY)
+            self.assertEquals(events[1].name, os.path.realpath(new2))
         finally:
             os.rmdir(new1)
             os.rmdir(new2)
+
+    def test_file_moved_from_not_watched_path(self):
+        import os
+        events = []
+        def callback(event):
+            events.append(event)
+
+        from fsevents import Stream
+        not_watched_path = os.path.realpath(self._make_tempdir()) + '/'
+        stream = Stream(callback, self.tempdir, file_events=True)
+
+        from fsevents import Observer
+        observer = Observer()
+        observer.schedule(stream)
+        observer.start()
+
+        # add single file
+        import time
+        while not observer.isAlive():
+            time.sleep(0.1)
+        del events[:]
+        time.sleep(2.1)
+
+        src_name = os.path.join(not_watched_path, "test")
+        dst_name = os.path.join(self.tempdir, "test")
+        f = open(src_name, "w")
+        f.write("abc")
+        f.close()
+
+        time.sleep(1.0)
+        os.rename(src_name, dst_name)
+        time.sleep(0.1)
+
+        # stop and join observer
+        observer.stop()
+        observer.unschedule(stream)
+        observer.join()
+
+        os.unlink(dst_name)
+        os.rmdir(not_watched_path)
+
+        from fsevents import IN_CREATE, IN_MODIFY
+
+        self.assertEquals(len(events), 2)
+        self.assertEquals(events[0].mask, IN_CREATE)
+        self.assertEquals(events[0].name, os.path.realpath(dst_name))
+        self.assertEquals(events[1].mask, IN_MODIFY)
+        self.assertEquals(events[1].name, os.path.realpath(dst_name))
+
+    def test_file_moved_to_not_watched_path(self):
+        import os
+        events = []
+        def callback(event):
+            events.append(event)
+
+        from fsevents import Stream
+        not_watched_path = os.path.realpath(self._make_tempdir()) + '/'
+        stream = Stream(callback, self.tempdir, file_events=True)
+
+        from fsevents import Observer
+        observer = Observer()
+        observer.schedule(stream)
+        observer.start()
+
+        # add single file
+        import time
+        while not observer.isAlive():
+            time.sleep(0.1)
+        del events[:]
+        time.sleep(2.1)
+
+        src_name = os.path.join(self.tempdir, "test")
+        dst_name = os.path.join(not_watched_path, "test")
+        f = open(src_name, "w")
+        f.write("abc")
+        f.close()
+
+        time.sleep(1.0)
+
+        os.rename(src_name, dst_name)
+
+        time.sleep(0.1)
+
+        # stop and join observer
+        observer.stop()
+        observer.unschedule(stream)
+        observer.join()
+
+        os.unlink(dst_name)
+        os.rmdir(not_watched_path)
+        from fsevents import IN_CREATE, IN_MODIFY, IN_DELETE
+
+        self.assertEquals(len(events), 3)
+        # assert the creation events
+        self.assertEquals(events[0].mask, IN_CREATE)
+        self.assertEquals(events[0].name, os.path.realpath(src_name))
+        self.assertEquals(events[1].mask, IN_MODIFY)
+        self.assertEquals(events[1].name, os.path.realpath(src_name))
+        self.assertEquals(events[2].mask, IN_DELETE)
+        self.assertEquals(events[2].name, os.path.realpath(src_name))
