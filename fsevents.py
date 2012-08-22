@@ -198,7 +198,7 @@ class FileEventCallback(object):
                         log.debug('Appending event "%s"', event)
                         events.append(event)
                         if not mask & FSE_MODIFIED_FLAG:
-                            log.warn("No matching flag for detected modify")
+                            log.debug("No matching flag for detected modify")
                     elif stat.st_ctime > snap_stat.st_ctime:
                         event = FileEvent(IN_ATTRIB, None, filename)
                         log.debug('Appending event "%s"', event)
@@ -211,8 +211,8 @@ class FileEventCallback(object):
                     events.append(event)
                     if ((not mask & FSE_REMOVED_FLAG) and
                             (not mask & FSE_RENAMED_FLAG)):
-                        log.warn("delete detected with no "
-                                 "delete or rename flag")
+                        log.debug("delete detected with no "
+                                  "delete or rename flag")
 
             for name in observed:
                 stat = current[name]
@@ -228,7 +228,7 @@ class FileEventCallback(object):
                     log.debug('Appending event "%s"', event)
                     events.append(moved_to_event)
                     if not mask & FSE_RENAMED_FLAG:
-                        log.warn('Rename detected without matching flag')
+                        log.debug('Rename detected without matching flag')
                 else:
                     in_create_event = FileEvent(IN_CREATE, None, filename)
                     log.debug('Appending event "%s"', in_create_event)
@@ -242,7 +242,7 @@ class FileEventCallback(object):
                                   ' missing. Possible reason was a copy.')
 
                     if not mask & FSE_CREATED_FLAG:
-                        log.warn("Create detected from snapshot"
+                        log.debug("Create detected from snapshot"
                                  "but event is not marked as create")
 
                 if os.path.isdir(filename):
