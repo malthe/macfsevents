@@ -56,7 +56,7 @@ class PathObservationTestCase(BaseTestCase):
         observer.unschedule(stream)
         observer.join()
 
-        self.assertEquals(events, [(path, 0)])
+        self.assertEquals(events[0][0], path)
 
     def test_multiple_files_added(self):
         events = []
@@ -93,7 +93,8 @@ class PathObservationTestCase(BaseTestCase):
             g.close()
             h.close()
             time.sleep(0.2)
-            self.assertEqual(sorted(events), sorted([(path1, 0), (path2, 0)]))
+            events = [e[0] for e in events]
+            self.assertEqual(sorted(events), sorted([path1, path2]))
         finally:
             f.close()
             g.close()
@@ -137,7 +138,8 @@ class PathObservationTestCase(BaseTestCase):
         observer.unschedule(stream2)
         observer.join()
 
-        self.assertEquals(events, [(path, 0), (path, 0)])
+        self.assertEquals(events[0][0], path)
+        self.assertEquals(events[1][0], path)
 
     def test_single_file_added_with_observer_unscheduled(self):
         events = []
@@ -199,7 +201,7 @@ class PathObservationTestCase(BaseTestCase):
         observer.stop()
         observer.join()
 
-        self.assertEquals(events, [(path, 0)])
+        self.assertEquals(events[0][0], path)
 
     def test_single_file_added_to_subdirectory(self):
         events = []
@@ -237,7 +239,7 @@ class PathObservationTestCase(BaseTestCase):
             observer.join()
 
             self.assertEquals(len(events), 1)
-            self.assertEquals(events, [(subdirectory, 0)])
+            self.assertEquals(events[0][0], subdirectory)
         finally:
             os.unlink(f.name)
             os.rmdir(subdirectory)
@@ -270,7 +272,7 @@ class PathObservationTestCase(BaseTestCase):
         observer.stop()
         observer.join()
 
-        self.assertEquals(events, [(path, 0)])
+        self.assertEquals(events[0][0], path)
 
     def test_start_then_watch(self):
         events = []
@@ -299,7 +301,7 @@ class PathObservationTestCase(BaseTestCase):
         observer.unschedule(stream)
         observer.join()
 
-        self.assertEquals(events, [(path, 0)])
+        self.assertEquals(events[0][0], path)
 
     def test_start_no_watch(self):
         events = []
@@ -359,10 +361,65 @@ class FileObservationTestCase(BaseTestCase):
         observer.join()
 
         os.unlink(f.name)
-        from fsevents import IN_CREATE
-        self.assertEquals(len(events), 1)
+        from fsevents import IN_CREATE, IN_MODIFY
+        # We get to events, create and modify
+        self.assertEquals(len(events), 2)
         self.assertEquals(events[0].mask, IN_CREATE)
         self.assertEquals(events[0].name, os.path.realpath(f.name))
+        self.assertEquals(events[1].mask, IN_MODIFY)
+        self.assertEquals(events[1].name, os.path.realpath(f.name))
+
+    def _assert_action_after_watcher(self, process_asap, assertions_cb):
+        events = []
+        def callback(event):
+            events.append(event)
+
+        import os
+        import time
+        from fsevents import Stream
+        from fsevents import Observer
+
+        observer = Observer(process_asap=process_asap)
+        observer.start()
+
+        stream = Stream(callback, self.tempdir, file_events=True)
+        observer.schedule(stream)
+        # add single file
+        del events[:]
+        f = open(os.path.join(self.tempdir, "test"), "w")
+        f.write("abc")
+        f.flush()
+        f.close()
+        time.sleep(0.2)
+
+        # stop and join observer
+        observer.stop()
+        observer.unschedule(stream)
+        observer.join()
+
+        os.unlink(f.name)
+        assertions_cb(events, f)
+
+    def test_single_file_created_just_after_the_watcher(self):
+
+        def assertions_cb(events, f):
+            import os
+            from fsevents import IN_CREATE, IN_MODIFY
+            self.assertEquals(len(events), 2)
+            self.assertEquals(events[0].mask, IN_CREATE)
+            self.assertEquals(events[0].name, os.path.realpath(f.name))
+            self.assertEquals(events[1].mask, IN_MODIFY)
+            self.assertEquals(events[1].name, os.path.realpath(f.name))
+
+        self._assert_action_after_watcher(True, assertions_cb)
+
+    def test_single_file_created_just_after_the_watcher_ignored(self):
+
+        def assertions_cb(events, f):
+            self.assertEquals(len(events), 0)
+
+        self._assert_action_after_watcher(False,
+                lambda e, f: self.assertEquals(len(e), 0))
 
     def test_single_file_deleted(self):
         events = []
