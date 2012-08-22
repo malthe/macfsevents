@@ -101,16 +101,25 @@ static PyObject* pyfsevents_loop(PyObject* self, PyObject* args) {
     return Py_None;
 }
 
-static PyObject* pyfsevents_schedule(PyObject* self, PyObject* args) {
+static PyObject* pyfsevents_schedule(PyObject* self, PyObject* args,
+                                     PyObject *keywds) {
     PyObject* thread;
     PyObject* stream;
     PyObject* paths;
     PyObject* callback;
+    PyObject* show_file_events;
 
-    if (!PyArg_ParseTuple(args, "OOOO:schedule",
-                          &thread, &stream, &callback, &paths))
+    // default latency to be used.
+    double latency = 0.01; 
+    
+    static char *kwlist[] = {"thread", "stream", "callback", "paths", 
+                             "show_file_events", "latency", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, keywds, "OOOOO|d:schedule", kwlist,
+                                     &thread, &stream, &callback, &paths,
+                                     &show_file_events, &latency))
         return NULL;
-
+    
     /* stream must not already have been scheduled */
     if (PyDict_Contains(streams, stream) == 1) {
         return NULL;
@@ -142,13 +151,19 @@ static PyObject* pyfsevents_schedule(PyObject* self, PyObject* args) {
     /* create event stream */
     FSEventStreamContext context = {0, (void*) info, NULL, NULL, NULL};
     FSEventStreamRef fsstream = NULL;
+    
+    UInt32 flags = kFSEventStreamCreateFlagNoDefer;
+    if(show_file_events == Py_True){
+        flags = flags | kFSEventStreamCreateFlagFileEvents;
+    }
+
     fsstream = FSEventStreamCreate(kCFAllocatorDefault,
                                    (FSEventStreamCallback)&handler,
                                    &context,
                                    cfArray,
                                    kFSEventStreamEventIdSinceNow,
-                                   0.01, // latency
-                                   kFSEventStreamCreateFlagNoDefer);
+                                   latency,
+                                   flags);
     CFRelease(cfArray);
 
     PyObject* value = PyCObject_FromVoidPtr((void*) fsstream, PyMem_Free);
@@ -212,9 +227,9 @@ static PyObject* pyfsevents_stop(PyObject* self, PyObject* thread) {
 static PyMethodDef methods[] = {
     {"loop", pyfsevents_loop, METH_VARARGS, NULL},
     {"stop", pyfsevents_stop, METH_O, NULL},
-    {"schedule", pyfsevents_schedule, METH_VARARGS, NULL},
+    {"schedule", (PyCFunction) pyfsevents_schedule, METH_VARARGS | METH_KEYWORDS, NULL},
     {"unschedule", pyfsevents_unschedule, METH_O, NULL},
-    {NULL},
+    {NULL, NULL, 0, NULL},
 };
 
 static char doc[] = "Low-level FSEvent interface.";
