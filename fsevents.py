@@ -199,7 +199,7 @@ class FileEventCallback(object):
                         events.append(event)
                         if not mask & FSE_MODIFIED_FLAG:
                             log.debug("No matching flag for detected modify")
-                    elif stat.st_ctime > snap_stat.st_ctime:
+                    elif stat.st_ctime != snap_stat.st_ctime:
                         event = FileEvent(IN_ATTRIB, None, filename)
                         log.debug('Appending event "%s"', event)
                         events.append(event)
