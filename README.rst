@@ -64,6 +64,18 @@ up an observer thread and schedule an event stream::
   stream = Stream(callback, path)
   observer.schedule(stream)
 
+The latency used by the observer can be adjusted to the requirements of you application. This is done by passing the latency keyword argument to the Observer:
+
+  from fsevents import Observer
+  observer = Observer(latency=0)  # default value is 0.01
+  observer.start()
+
+You can also tell the observer to process the events as soon as possible rather than waiting for all the streams to be ready:
+
+  from fsevents import Observer
+  observer = Observer(process_asap=True)  # default value is False
+  observer.start()
+
 Streams can observe any number of paths; simply pass them as
 positional arguments (or using the ``*`` operator)::
 
