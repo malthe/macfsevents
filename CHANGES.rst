@@ -1,7 +1,8 @@
 Changelog
 =========
 
-In next release ...
+0.3 (2013-01-21)
+------------------
 
 - Added compatibility with Python 3. Note that Python 2.7 or better is
   now required.

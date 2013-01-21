@@ -20,7 +20,7 @@ ext_modules = [
     ]
 
 setup(name = "MacFSEvents",
-      version = "0.2.8",
+      version = "0.3",
       description = "Thread-based interface to file system observation primitives.",
       long_description = "\n\n".join((read('README.rst'), read('CHANGES.rst'))),
       license = "BSD",
