@@ -2,6 +2,7 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreServices/CoreServices.h>
 #include <signal.h>
+#include "compat.h"
 
 #if PY_VERSION_HEX < 0x02050000 && !defined(PY_SSIZE_T_MIN)
 typedef int Py_ssize_t;
@@ -221,9 +222,21 @@ static char doc[] = "Low-level FSEvent interface.";
 
 PyMODINIT_FUNC init_fsevents(void) {
     PyObject* mod = Py_InitModule3("_fsevents", methods, doc);
-    PyModule_AddIntConstant(mod, "POLLIN", kCFFileDescriptorReadCallBack);
-    PyModule_AddIntConstant(mod, "POLLOUT", kCFFileDescriptorWriteCallBack);
-
+    PyModule_AddIntConstant(mod, "CF_POLLIN", kCFFileDescriptorReadCallBack);
+    PyModule_AddIntConstant(mod, "CF_POLLOUT", kCFFileDescriptorWriteCallBack);
+    PyModule_AddIntConstant(mod, "FS_IGNORESELF", kFSEventStreamCreateFlagIgnoreSelf);
+    PyModule_AddIntConstant(mod, "FS_FILEEVENTS", kFSEventStreamCreateFlagFileEvents);
+    PyModule_AddIntConstant(mod, "FS_ITEMCREATED", kFSEventStreamEventFlagItemCreated);
+    PyModule_AddIntConstant(mod, "FS_ITEMREMOVED", kFSEventStreamEventFlagItemRemoved);
+    PyModule_AddIntConstant(mod, "FS_ITEMINODEMETAMOD", kFSEventStreamEventFlagItemInodeMetaMod);
+    PyModule_AddIntConstant(mod, "FS_ITEMRENAMED", kFSEventStreamEventFlagItemRenamed);
+    PyModule_AddIntConstant(mod, "FS_ITEMMODIFIED", kFSEventStreamEventFlagItemModified);
+    PyModule_AddIntConstant(mod, "FS_ITEMFINDERINFOMOD", kFSEventStreamEventFlagItemFinderInfoMod);
+    PyModule_AddIntConstant(mod, "FS_ITEMCHANGEOWNER", kFSEventStreamEventFlagItemChangeOwner);
+    PyModule_AddIntConstant(mod, "FS_ITEMXATTRMOD", kFSEventStreamEventFlagItemXattrMod);
+    PyModule_AddIntConstant(mod, "FS_ITEMISFILE", kFSEventStreamEventFlagItemIsFile);
+    PyModule_AddIntConstant(mod, "FS_ITEMISDIR", kFSEventStreamEventFlagItemIsDir);
+    PyModule_AddIntConstant(mod, "FS_ITEMISSYMLINK", kFSEventStreamEventFlagItemIsSymlink);
     loops = PyDict_New();
     streams = PyDict_New();
 }

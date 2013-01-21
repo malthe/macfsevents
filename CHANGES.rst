@@ -1,6 +1,11 @@
 Changelog
 =========
 
+In next release ...
+
+- Fixed test suite on with 10.8. The event masks reported on this
+  platform are non-trivial which is a change from previous versions.
+
 0.2.8 (2012-06-09)
 ------------------
 

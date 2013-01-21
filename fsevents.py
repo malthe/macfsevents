@@ -1,6 +1,27 @@
 import os
 import threading
-import _fsevents
+
+from _fsevents import (
+    loop,
+    stop,
+    schedule,
+    unschedule,
+    CF_POLLIN,
+    CF_POLLOUT,
+    FS_IGNORESELF,
+    FS_FILEEVENTS,
+    FS_ITEMCREATED,
+    FS_ITEMREMOVED,
+    FS_ITEMINODEMETAMOD,
+    FS_ITEMRENAMED,
+    FS_ITEMMODIFIED,
+    FS_ITEMFINDERINFOMOD,
+    FS_ITEMCHANGEOWNER,
+    FS_ITEMXATTRMOD,
+    FS_ITEMISFILE,
+    FS_ITEMISDIR,
+    FS_ITEMISSYMLINK,  
+)
 
 # inotify event flags
 IN_MODIFY = 0x00000002
@@ -9,6 +30,7 @@ IN_CREATE = 0x00000100
 IN_DELETE = 0x00000200
 IN_MOVED_FROM = 0x00000040
 IN_MOVED_TO = 0x00000080
+
 
 class Observer(threading.Thread):
     event = None
@@ -41,7 +63,7 @@ class Observer(threading.Thread):
             self.lock.release()
 
         # start run-loop
-        _fsevents.loop(self)
+        loop(self)
 
     def _schedule(self, stream):
         if not stream.paths:
@@ -52,7 +74,7 @@ class Observer(threading.Thread):
             def callback(paths, masks):
                 for path, mask in zip(paths, masks):
                     stream.callback(path, mask)
-        _fsevents.schedule(self, stream, callback, stream.paths)
+        schedule(self, stream, callback, stream.paths)
 
     def schedule(self, stream):
         self.lock.acquire()
@@ -72,7 +94,7 @@ class Observer(threading.Thread):
         self.lock.acquire()
         try:
             if self.streams is None:
-                _fsevents.unschedule(stream)
+                unschedule(stream)
             else:
                 self.streams.remove(stream)
         finally:
@@ -80,7 +102,7 @@ class Observer(threading.Thread):
 
     def stop(self):
         if self.event is None:
-            _fsevents.stop(self)
+            stop(self)
         else:
             event = self.event
             self.event = None
