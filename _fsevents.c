@@ -10,6 +10,22 @@ typedef int Py_ssize_t;
 #define PY_SSIZE_T_MIN INT_MIN
 #endif
 
+#if PY_MAJOR_VERSION >= 3
+  #define MOD_ERROR_VAL NULL
+  #define MOD_SUCCESS_VAL(val) val
+  #define MOD_INIT(name) PyMODINIT_FUNC PyInit_##name(void)
+  #define MOD_DEF(ob, name, doc, methods) \
+          static struct PyModuleDef moduledef = { \
+            PyModuleDef_HEAD_INIT, name, doc, -1, methods, }; \
+          ob = PyModule_Create(&moduledef);
+#else
+  #define MOD_ERROR_VAL
+  #define MOD_SUCCESS_VAL(val)
+  #define MOD_INIT(name) void init##name(void)
+  #define MOD_DEF(ob, name, doc, methods) \
+          ob = Py_InitModule3(name, methods, doc);
+#endif
+
 const char callback_error_msg[] = "Unable to call callback function.";
 
 PyObject* loops = NULL;
@@ -28,11 +44,10 @@ static void handler(FSEventStreamRef stream,
                     const char *const eventPaths[],
                     const FSEventStreamEventFlags *eventMasks,
                     const uint64_t *eventIDs) {
-
-    PyEval_AcquireLock();
-
-    PyThreadState *_save;
-    _save = PyThreadState_Swap(info->state);
+  
+    PyGILState_STATE state = PyGILState_Ensure();
+    PyThreadState *_save = PyEval_SaveThread();
+    PyEval_RestoreThread(info->state);
 
     /* convert event data to Python objects */
     PyObject *eventPathList = PyList_New(numEvents);
@@ -42,8 +57,14 @@ static void handler(FSEventStreamRef stream,
 
     int i;
     for (i = 0; i < numEvents; i++) {
-        PyObject *str = PyString_FromString(eventPaths[i]);
-        PyObject *num = PyInt_FromLong(eventMasks[i]);
+        PyObject *str = PyBytes_FromString(eventPaths[i]);
+
+        #if PY_MAJOR_VERSION >= 3
+            PyObject *num = PyLong_FromLong(eventMasks[i]);
+        #else
+            PyObject *num = PyInt_FromLong(eventMasks[i]);
+        #endif
+
         if ((!num) || (!str)) {
             Py_DECREF(eventPathList);
             Py_DECREF(eventMaskList);
@@ -64,7 +85,7 @@ static void handler(FSEventStreamRef stream,
     }
 
     PyThreadState_Swap(_save);
-    PyEval_ReleaseLock();
+    PyGILState_Release(state);
 }
 
 static PyObject* pyfsevents_loop(PyObject* self, PyObject* args) {
@@ -77,9 +98,9 @@ static PyObject* pyfsevents_loop(PyObject* self, PyObject* args) {
     /* allocate info and store thread state */
     PyObject* value = PyDict_GetItem(loops, thread);
 
-    if (value == NULL) {
+    if (!PyCapsule_IsValid(value, NULL)) {
         CFRunLoopRef loop = CFRunLoopGetCurrent();
-        value = PyCObject_FromVoidPtr((void*) loop, PyMem_Free);
+        value = PyCapsule_New((void*) loop, NULL, NULL);
         PyDict_SetItem(loops, thread, value);
         Py_INCREF(thread);
         Py_INCREF(value);
@@ -129,7 +150,7 @@ static PyObject* pyfsevents_schedule(PyObject* self, PyObject* args) {
     const char* path;
     CFStringRef cfStr;
     for (i=0; i<size; i++) {
-        path = PyString_AS_STRING(PyList_GetItem(paths, i));
+        path = PyBytes_AS_STRING(PyList_GetItem(paths, i));
         cfStr = CFStringCreateWithCString(kCFAllocatorDefault,
                                           path,
                                           kCFStringEncodingUTF8);
@@ -152,16 +173,16 @@ static PyObject* pyfsevents_schedule(PyObject* self, PyObject* args) {
                                    kFSEventStreamCreateFlagNoDefer);
     CFRelease(cfArray);
 
-    PyObject* value = PyCObject_FromVoidPtr((void*) fsstream, PyMem_Free);
+    PyObject* value = PyCapsule_New((void*) fsstream, NULL, NULL);
     PyDict_SetItem(streams, stream, value);
 
     /* get runloop reference from observer info data or current */
     value = PyDict_GetItem(loops, thread);
     CFRunLoopRef loop;
-    if (value == NULL) {
+    if (!PyCapsule_IsValid(value, NULL)) {
         loop = CFRunLoopGetCurrent();
     } else {
-        loop = (CFRunLoopRef) PyCObject_AsVoidPtr(value);
+        loop = (CFRunLoopRef) PyCapsule_GetPointer(value, NULL);
     }
 
     FSEventStreamScheduleWithRunLoop(fsstream, loop, kCFRunLoopDefaultMode);
@@ -187,11 +208,13 @@ static PyObject* pyfsevents_schedule(PyObject* self, PyObject* args) {
 static PyObject* pyfsevents_unschedule(PyObject* self, PyObject* stream) {
     PyObject* value = PyDict_GetItem(streams, stream);
     PyDict_DelItem(streams, stream);
-    FSEventStreamRef fsstream = PyCObject_AsVoidPtr(value);
+    if (PyCapsule_IsValid(value, NULL)) {
+	FSEventStreamRef fsstream = PyCapsule_GetPointer(value, NULL);
 
-    FSEventStreamStop(fsstream);
-    FSEventStreamInvalidate(fsstream);
-    FSEventStreamRelease(fsstream);
+	FSEventStreamStop(fsstream);
+	FSEventStreamInvalidate(fsstream);
+	FSEventStreamRelease(fsstream);
+    }
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -199,11 +222,13 @@ static PyObject* pyfsevents_unschedule(PyObject* self, PyObject* stream) {
 
 static PyObject* pyfsevents_stop(PyObject* self, PyObject* thread) {
     PyObject* value = PyDict_GetItem(loops, thread);
-    CFRunLoopRef loop = PyCObject_AsVoidPtr(value);
+    if (PyCapsule_IsValid(value, NULL)) {
+        CFRunLoopRef loop = PyCapsule_GetPointer(value, NULL);
 
-    /* stop runloop */
-    if (loop) {
-        CFRunLoopStop(loop);
+	/* stop runloop */
+	if (loop) {
+	    CFRunLoopStop(loop);
+	}
     }
 
     Py_INCREF(Py_None);
@@ -220,8 +245,14 @@ static PyMethodDef methods[] = {
 
 static char doc[] = "Low-level FSEvent interface.";
 
-PyMODINIT_FUNC init_fsevents(void) {
-    PyObject* mod = Py_InitModule3("_fsevents", methods, doc);
+MOD_INIT(_fsevents) {
+    PyObject* mod;
+
+    MOD_DEF(mod, "_fsevents", doc, methods)
+
+    if (mod == NULL)
+        return MOD_ERROR_VAL;
+
     PyModule_AddIntConstant(mod, "CF_POLLIN", kCFFileDescriptorReadCallBack);
     PyModule_AddIntConstant(mod, "CF_POLLOUT", kCFFileDescriptorWriteCallBack);
     PyModule_AddIntConstant(mod, "FS_IGNORESELF", kFSEventStreamCreateFlagIgnoreSelf);
@@ -239,5 +270,7 @@ PyMODINIT_FUNC init_fsevents(void) {
     PyModule_AddIntConstant(mod, "FS_ITEMISSYMLINK", kFSEventStreamEventFlagItemIsSymlink);
     loops = PyDict_New();
     streams = PyDict_New();
+
+    return MOD_SUCCESS_VAL(mod);
 }
 

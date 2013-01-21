@@ -73,7 +73,7 @@ class PathObservationTestCase(BaseTestCase):
         observer.unschedule(stream)
         observer.join()
 
-        self.assertEquals(events, [(path, self.create_and_remove_mask)])
+        self.assertEqual(events, [(path, self.create_and_remove_mask)])
 
     def test_multiple_files_added(self):
         events = []
@@ -154,7 +154,7 @@ class PathObservationTestCase(BaseTestCase):
         observer.unschedule(stream2)
         observer.join()
 
-        self.assertEquals(events, [(path, self.create_and_remove_mask), (path, self.create_and_remove_mask)])
+        self.assertEqual(events, [(path, self.create_and_remove_mask), (path, self.create_and_remove_mask)])
 
     def test_single_file_added_with_observer_unscheduled(self):
         events = []
@@ -184,7 +184,7 @@ class PathObservationTestCase(BaseTestCase):
         observer.stop()
         observer.join()
 
-        self.assertEquals(events, [])
+        self.assertEqual(events, [])
 
     def test_single_file_added_with_observer_rescheduled(self):
         events = []
@@ -216,7 +216,7 @@ class PathObservationTestCase(BaseTestCase):
         observer.stop()
         observer.join()
 
-        self.assertEquals(events, [(path, self.create_and_remove_mask)])
+        self.assertEqual(events, [(path, self.create_and_remove_mask)])
 
     def test_single_file_added_to_subdirectory(self):
         events = []
@@ -253,8 +253,8 @@ class PathObservationTestCase(BaseTestCase):
             observer.unschedule(stream)
             observer.join()
 
-            self.assertEquals(len(events), 1)
-            self.assertEquals(events, [(subdirectory, self.modified_mask)])
+            self.assertEqual(len(events), 1)
+            self.assertEqual(events, [(subdirectory, self.modified_mask)])
         finally:
             os.unlink(f.name)
             os.rmdir(subdirectory)
@@ -287,7 +287,7 @@ class PathObservationTestCase(BaseTestCase):
         observer.stop()
         observer.join()
 
-        self.assertEquals(events, [(path, self.create_and_remove_mask)])
+        self.assertEqual(events, [(path, self.create_and_remove_mask)])
 
     def test_start_then_watch(self):
         events = []
@@ -316,7 +316,7 @@ class PathObservationTestCase(BaseTestCase):
         observer.unschedule(stream)
         observer.join()
 
-        self.assertEquals(events, [(path, self.create_and_remove_mask)])
+        self.assertEqual(events, [(path, self.create_and_remove_mask)])
 
     def test_start_no_watch(self):
         events = []
@@ -341,7 +341,7 @@ class PathObservationTestCase(BaseTestCase):
         observer.stop()
         observer.join()
 
-        self.assertEquals(events, [])
+        self.assertEqual(events, [])
 
 class FileObservationTestCase(BaseTestCase):
     def test_single_file_created(self):
@@ -377,9 +377,9 @@ class FileObservationTestCase(BaseTestCase):
 
         os.unlink(f.name)
         from fsevents import IN_CREATE
-        self.assertEquals(len(events), 1)
-        self.assertEquals(events[0].mask, IN_CREATE)
-        self.assertEquals(events[0].name, os.path.realpath(f.name))
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0].mask, IN_CREATE)
+        self.assertEqual(events[0].name, os.path.realpath(f.name))
 
     def test_single_file_deleted(self):
         events = []
@@ -414,9 +414,9 @@ class FileObservationTestCase(BaseTestCase):
         observer.join()
 
         from fsevents import IN_DELETE
-        self.assertEquals(len(events), 1)
-        self.assertEquals(events[0].mask, IN_DELETE)
-        self.assertEquals(events[0].name, os.path.realpath(f.name))
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0].mask, IN_DELETE)
+        self.assertEqual(events[0].name, os.path.realpath(f.name))
 
     def test_single_file_moved(self):
         events = []
@@ -454,12 +454,12 @@ class FileObservationTestCase(BaseTestCase):
         os.unlink(new)
         from fsevents import IN_MOVED_FROM
         from fsevents import IN_MOVED_TO
-        self.assertEquals(len(events), 2)
-        self.assertEquals(events[0].mask, IN_MOVED_FROM)
-        self.assertEquals(events[0].name, os.path.realpath(f.name))
-        self.assertEquals(events[1].mask, IN_MOVED_TO)
-        self.assertEquals(events[1].name, os.path.realpath(new))
-        self.assertEquals(events[0].cookie, events[1].cookie)
+        self.assertEqual(len(events), 2)
+        self.assertEqual(events[0].mask, IN_MOVED_FROM)
+        self.assertEqual(events[0].name, os.path.realpath(f.name))
+        self.assertEqual(events[1].mask, IN_MOVED_TO)
+        self.assertEqual(events[1].name, os.path.realpath(new))
+        self.assertEqual(events[0].cookie, events[1].cookie)
 
     def test_single_file_modified(self):
         events = []
@@ -496,9 +496,9 @@ class FileObservationTestCase(BaseTestCase):
 
         os.unlink(f.name)
         from fsevents import IN_MODIFY
-        self.assertEquals(len(events), 1)
-        self.assertEquals(events[0].mask, IN_MODIFY)
-        self.assertEquals(events[0].name, os.path.realpath(f.name))
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0].mask, IN_MODIFY)
+        self.assertEqual(events[0].name, os.path.realpath(f.name))
 
     def test_single_file_created_and_modified(self):
         events = []
@@ -539,11 +539,11 @@ class FileObservationTestCase(BaseTestCase):
 
         os.unlink(f.name)
         from fsevents import IN_CREATE, IN_MODIFY
-        self.assertEquals(len(events), 2)
-        self.assertEquals(events[0].mask, IN_CREATE)
-        self.assertEquals(events[0].name, os.path.realpath(f.name))
-        self.assertEquals(events[1].mask, IN_MODIFY)
-        self.assertEquals(events[1].name, os.path.realpath(f.name))
+        self.assertEqual(len(events), 2)
+        self.assertEqual(events[0].mask, IN_CREATE)
+        self.assertEqual(events[0].name, os.path.realpath(f.name))
+        self.assertEqual(events[1].mask, IN_MODIFY)
+        self.assertEqual(events[1].name, os.path.realpath(f.name))
 
     def test_single_directory_deleted(self):
         events = []
@@ -581,9 +581,9 @@ class FileObservationTestCase(BaseTestCase):
             observer.join()
 
             from fsevents import IN_DELETE
-            self.assertEquals(len(events), 1)
-            self.assertEquals(events[0].mask, IN_DELETE)
-            self.assertEquals(events[0].name, os.path.realpath(new2))
+            self.assertEqual(len(events), 1)
+            self.assertEqual(events[0].mask, IN_DELETE)
+            self.assertEqual(events[0].name, os.path.realpath(new2))
         finally:
             os.rmdir(new1)
 
@@ -594,7 +594,7 @@ class FileObservationTestCase(BaseTestCase):
         events = []
         def callback(event):
             events.append(event)
-
+        
         stream = Stream(callback, self.tempdir, file_events=True)
         new1 = os.path.join(self.tempdir, "newdir1")
         new2 = os.path.join(self.tempdir, "newdir2")
@@ -616,9 +616,9 @@ class FileObservationTestCase(BaseTestCase):
             observer.join()
 
             from fsevents import IN_CREATE
-            self.assertEquals(len(events), 1)
-            self.assertEquals(events[0].mask, IN_CREATE)
-            self.assertEquals(events[0].name, os.path.realpath(new2))
+            self.assertEqual(len(events), 1)
+            self.assertEqual(events[0].mask, IN_CREATE)
+            self.assertEqual(events[0].name, os.path.realpath(new2))
         finally:
             os.rmdir(new1)
             os.rmdir(new2)

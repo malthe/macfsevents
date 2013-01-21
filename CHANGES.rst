@@ -3,6 +3,9 @@ Changelog
 
 In next release ...
 
+- Added compatibility with Python 3. Note that Python 2.7 or better is
+  now required.
+
 - Fixed test suite on with 10.8. The event masks reported on this
   platform are non-trivial which is a change from previous versions.
 

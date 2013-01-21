@@ -1,4 +1,5 @@
 import os
+import sys
 import threading
 
 from _fsevents import (
@@ -30,6 +31,12 @@ IN_CREATE = 0x00000100
 IN_DELETE = 0x00000200
 IN_MOVED_FROM = 0x00000040
 IN_MOVED_TO = 0x00000080
+
+def check_path_string_type(*paths):
+    for path in paths:
+        if not isinstance(path, str):
+            raise TypeError(
+                "Path must be string, not '%s'." % type(path).__name__)
 
 
 class Observer(threading.Thread):
@@ -69,10 +76,12 @@ class Observer(threading.Thread):
         if not stream.paths:
             raise ValueError("No paths to observe.")
         if stream.file_events:
-            callback = FileEventCallback(stream.callback, stream.paths)
+            callback = FileEventCallback(stream.callback, stream.raw_paths)
         else:
             def callback(paths, masks):
                 for path, mask in zip(paths, masks):
+                    if sys.version_info[0] >= 3:
+                        path = path.decode('utf-8')
                     stream.callback(path, mask)
         schedule(self, stream, callback, stream.paths)
 
@@ -112,13 +121,17 @@ class Stream(object):
     def __init__(self, callback, *paths, **options):
         file_events = options.pop('file_events', False)
         assert len(options) == 0, "Invalid option(s): %s" % repr(options.keys())
-        for path in paths:
-            if not isinstance(path, str):
-                raise TypeError(
-                    "Path must be string, not '%s'." % type(path).__name__)
+        check_path_string_type(*paths)
 
         self.callback = callback
-        self.paths = list(paths)
+        self.raw_paths = paths
+
+        # The C-extension needs the path in 8-bit form.
+        self.paths = [
+            path if isinstance(path, bytes) 
+            else path.encode('utf-8') for path in paths
+        ]
+
         self.file_events = file_events
 
 class FileEvent(object):
@@ -136,6 +149,7 @@ class FileEventCallback(object):
     def __init__(self, callback, paths):
         self.snapshots = {}
         for path in paths:
+            check_path_string_type(path)
             self.snapshot(path)
         self.callback = callback
         self.cookie = 0
@@ -145,6 +159,9 @@ class FileEventCallback(object):
         deleted = {}
 
         for path in sorted(paths):
+            if sys.version_info[0] >= 3:
+                path = path.decode('utf-8')
+                
             path = path.rstrip('/')
             snapshot = self.snapshots[path]
 

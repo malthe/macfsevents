@@ -12,6 +12,7 @@ X ``FSEvents`` API in a C-extension.
 Requirements:
 
 - Mac OS X 10.5+ (Leopard)
+- Python 2.7+
 
 This software was written by Malthe Borch <mborch@gmail.com>. The
 :mod:`pyfsevents` module by Nicolas Dumazet was used for reference.
@@ -19,8 +20,14 @@ This software was written by Malthe Borch <mborch@gmail.com>. The
 Why?
 ----
 
-At this time of writing there are three other libraries that integrate
+At this time of writing there are four other libraries that integrate
 with the ``FSEvents`` API:
+
+**watchdog**:
+
+  This library actually builds on the code in :mod:`MacFSEvents` (this
+  project), but currently does not support Python 3 (though this
+  should happen soon). It also includes shell utilities.
 
 **pyobjc-framework-FSEvents**
 
@@ -35,8 +42,8 @@ with the ``FSEvents`` API:
 
   Obsolete bindings to the socket API by John Sutherland.
 
-These issues have been addressed in :mod:`MacFSEvents`. The library
-provides a clean API and has full test coverage.
+The :mod:`MacFSEvents` library provides a clean API and has full test
+coverage.
 
 Note that :mod:`pyfsevents` has bindings to the file descriptor
 observation primitives. This is not currently implemented by the
