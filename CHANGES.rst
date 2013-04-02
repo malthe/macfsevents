@@ -30,7 +30,7 @@ Bugfixes:
 0.2.6 (2012-03-17)
 ------------------
 
-- Fixed compilation problen on newer platforms.
+- Fixed compilation problem on newer platforms.
   [nsfmc]
 
 0.2.5 (2012-02-01)
