@@ -13,7 +13,7 @@ def read(fname):
 
 ext_modules = [
     Extension(name = '_fsevents',
-              sources = ['_fsevents.c'],
+              sources = ['_fsevents.c', 'compat.c'],
               extra_link_args = ["-framework","CoreFoundation",
                                "-framework","CoreServices"],
              ),
