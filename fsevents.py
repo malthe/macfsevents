@@ -157,6 +157,7 @@ class FileEventCallback(object):
     def __call__(self, paths, masks):
         events = []
         deleted = {}
+        created = {}
 
         for path in sorted(paths):
             if sys.version_info[0] >= 3:
@@ -164,7 +165,6 @@ class FileEventCallback(object):
                 
             path = path.rstrip('/')
             snapshot = self.snapshots[path]
-
             current = {}
             try:
                 for name in os.listdir(path):
@@ -175,12 +175,10 @@ class FileEventCallback(object):
             except OSError:
                 # recursive delete causes problems with path being non-existent
                 pass
-
             observed = set(current)
 
             for name, snap_stat in snapshot.items():
                 filename = os.path.join(path, name)
-
                 if name in observed:
                     stat = current[name]
                     if stat.st_mtime > snap_stat.st_mtime:
@@ -189,9 +187,20 @@ class FileEventCallback(object):
                         events.append(FileEvent(IN_ATTRIB, None, filename))
                     observed.discard(name)
                 else:
-                    event = FileEvent(IN_DELETE, None, filename)
-                    deleted[snap_stat.st_ino] = event
-                    events.append(event)
+                    event = None
+                    if (snap_stat):
+                        event = created.get(snap_stat.st_ino)
+                    if (event is not None):
+                        self.cookie += 1
+                        event.mask = IN_MOVED_FROM
+                        event.cookie = self.cookie
+                        tmpFilename = event.name
+                        event.name = filename
+                        events.append(FileEvent(IN_MOVED_TO, self.cookie, tmpFilename))
+                    else:
+                        event = FileEvent(IN_DELETE, None, filename)
+                        deleted[snap_stat.st_ino] = event
+                        events.append(event)
 
             for name in observed:
                 stat = current[name]
@@ -205,10 +214,10 @@ class FileEventCallback(object):
                     event = FileEvent(IN_MOVED_TO, self.cookie, filename)
                 else:
                     event = FileEvent(IN_CREATE, None, filename)
+                    created[stat.st_ino] = event
 
                 if os.path.isdir(filename):
                     self.snapshot(filename)
-
                 events.append(event)
 
             snapshot.clear()
