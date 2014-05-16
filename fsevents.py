@@ -187,9 +187,7 @@ class FileEventCallback(object):
                         events.append(FileEvent(IN_ATTRIB, None, filename))
                     observed.discard(name)
                 else:
-                    event = None
-                    if (snap_stat):
-                        event = created.get(snap_stat.st_ino)
+                    event = created.get(snap_stat.st_ino)
                     if (event is not None):
                         self.cookie += 1
                         event.mask = IN_MOVED_FROM
