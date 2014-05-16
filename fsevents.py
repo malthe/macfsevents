@@ -194,9 +194,9 @@ class FileEventCallback(object):
                         self.cookie += 1
                         event.mask = IN_MOVED_FROM
                         event.cookie = self.cookie
-                        tmpFilename = event.name
+                        tmp_filename = event.name
                         event.name = filename
-                        events.append(FileEvent(IN_MOVED_TO, self.cookie, tmpFilename))
+                        events.append(FileEvent(IN_MOVED_TO, self.cookie, tmp_filename))
                     else:
                         event = FileEvent(IN_DELETE, None, filename)
                         deleted[snap_stat.st_ino] = event
