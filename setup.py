@@ -1,8 +1,5 @@
 import os
 
-from distribute_setup import use_setuptools
-use_setuptools()
-
 from setuptools.extension import Extension
 from setuptools.command.build_ext import build_ext
 from setuptools import setup
