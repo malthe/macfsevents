@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.4 (2014-10-23)
+----------------
+
+- Do not use 'Distribute'. It's been deprecated
+
+
 0.3 (2013-01-21)
 ------------------
 
