@@ -78,7 +78,7 @@ positional arguments (or using the ``*`` operator)::
 
 To start the observer in its own thread, use the ``start`` method::
 
-  observer.starts()
+  observer.start()
 
 To start the observer in the current thread, use the ``run`` method
 (it will block the thread until stopped from another thread)::
