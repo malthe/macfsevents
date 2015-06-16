@@ -22,8 +22,62 @@ from _fsevents import (
     FS_ITEMISFILE,
     FS_ITEMISDIR,
     FS_ITEMISSYMLINK,  
-)
 
+    FS_EVENTIDSINCENOW,
+    
+    FS_FLAGEVENTIDSWRAPPED,
+    FS_FLAGNONE,
+    FS_FLAGHISTORYDONE,
+    FS_FLAGROOTCHANGED,
+    FS_FLAGKERNELDROPPED,
+    FS_FLAGUNMOUNT,
+    FS_FLAGMOUNT,
+    FS_FLAGUSERDROPPED,
+    FS_FLAGMUSTSCANSUBDIRS,
+
+    FS_CFLAGFILEEVENTS,
+    FS_CFLAGNONE,
+    FS_CFLAGIGNORESELF,
+    FS_CFLAGUSECFTYPES,
+    FS_CFLAGNODEFER,
+    FS_CFLAGWATCHROOT,
+    )
+
+class Mask(int):
+    stringmap = {FS_FLAGMUSTSCANSUBDIRS:    'MustScanSubDirs',
+                 FS_FLAGUSERDROPPED:        'UserDropped',
+                 FS_FLAGKERNELDROPPED:      'KernelDropped',
+                 FS_FLAGEVENTIDSWRAPPED:    'EventIDsWrapped',
+                 FS_FLAGHISTORYDONE:        'HistoryDone',
+                 FS_FLAGROOTCHANGED:        'RootChanged',
+                 FS_FLAGMOUNT:              'Mount',
+                 FS_FLAGUNMOUNT:            'Unmount',
+            #         /* flags when creating the stream.*/
+                 FS_ITEMCREATED:            'ItemCreated',
+                 FS_ITEMREMOVED:            'ItemRemoved',
+                 FS_ITEMINODEMETAMOD:       'ItemInodeMetaMod',
+                 FS_ITEMRENAMED:            'ItemRenamed',
+                 FS_ITEMMODIFIED:           'ItemModified',
+                 FS_ITEMFINDERINFOMOD:      'ItemFinderInfoMod',
+                 FS_ITEMCHANGEOWNER:        'ItemChangedOwner',
+                 FS_ITEMXATTRMOD:           'ItemXAttrMod',
+                 FS_ITEMISFILE:             'ItemIsFile',
+                 FS_ITEMISDIR:              'ItemIsDir',
+                 FS_ITEMISSYMLINK:          'ItemIsSymlink'
+                 }
+
+    svals = stringmap.keys()
+    svals.sort()
+    
+    def __str__(self):
+        res = ''
+        for k in self.svals:
+            if self&k:
+                res += self.stringmap[k] + '|'
+        res = res[:-1]
+        res = '['+res+']'
+        return res
+        
 # inotify event flags
 IN_MODIFY = 0x00000002
 IN_ATTRIB = 0x00000004
@@ -78,12 +132,12 @@ class Observer(threading.Thread):
         if stream.file_events:
             callback = FileEventCallback(stream.callback, stream.raw_paths)
         else:
-            def callback(paths, masks):
-                for path, mask in zip(paths, masks):
+            def callback(paths, masks, ids):
+                for path, mask, id in zip(paths, masks, ids):
                     if sys.version_info[0] >= 3:
                         path = path.decode('utf-8')
-                    stream.callback(path, mask)
-        schedule(self, stream, callback, stream.paths)
+                    stream.callback(path, Mask(mask), id)
+        schedule(self, stream, callback, stream.paths, stream.since, stream.latency, stream.cflags)
 
     def schedule(self, stream):
         self.lock.acquire()
@@ -120,6 +174,9 @@ class Observer(threading.Thread):
 class Stream(object):
     def __init__(self, callback, *paths, **options):
         file_events = options.pop('file_events', False)
+        since = options.pop('since',FS_EVENTIDSINCENOW)
+        cflags = options.pop('flags', FS_CFLAGNONE)
+        latency = options.pop('latency', 0.01)
         assert len(options) == 0, "Invalid option(s): %s" % repr(options.keys())
         check_path_string_type(*paths)
 
@@ -133,6 +190,9 @@ class Stream(object):
         ]
 
         self.file_events = file_events
+        self.since = since
+        self.cflags = cflags
+        self.latency = latency
 
 class FileEvent(object):
     __slots__ = 'mask', 'cookie', 'name'
@@ -154,7 +214,7 @@ class FileEventCallback(object):
         self.callback = callback
         self.cookie = 0
 
-    def __call__(self, paths, masks):
+    def __call__(self, paths, masks, ids):
         events = []
         deleted = {}
         created = {}

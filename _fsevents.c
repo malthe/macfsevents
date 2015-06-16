@@ -52,7 +52,8 @@ static void handler(FSEventStreamRef stream,
     /* convert event data to Python objects */
     PyObject *eventPathList = PyList_New(numEvents);
     PyObject *eventMaskList = PyList_New(numEvents);
-    if ((!eventPathList) || (!eventMaskList))
+    PyObject *eventIDList = PyList_New(numEvents);
+    if ((!eventPathList) || (!eventMaskList) || (!eventIDList))
         return;
 
     int i;
@@ -61,21 +62,25 @@ static void handler(FSEventStreamRef stream,
 
         #if PY_MAJOR_VERSION >= 3
             PyObject *num = PyLong_FromLong(eventMasks[i]);
+            PyObject *id = PyLong_FromLong(eventIDs[i]);
         #else
             PyObject *num = PyInt_FromLong(eventMasks[i]);
+            PyObject *id = PyInt_FromLong(eventIDs[i]);
         #endif
 
-        if ((!num) || (!str)) {
+        if ((!num) || (!str) || (!id)) {
             Py_DECREF(eventPathList);
             Py_DECREF(eventMaskList);
+            Py_DECREF(eventIDList);
             return;
         }
         PyList_SET_ITEM(eventPathList, i, str);
         PyList_SET_ITEM(eventMaskList, i, num);
+        PyList_SET_ITEM(eventIDList, i, id);
     }
 
-    if (PyObject_CallFunction(info->callback, "OO", eventPathList,
-                              eventMaskList) == NULL) {
+    if (PyObject_CallFunction(info->callback, "OOO", eventPathList,
+                              eventMaskList, eventIDList) == NULL) {
         /* may can return NULL if an exception is raised */
         if (!PyErr_Occurred())
             PyErr_SetString(PyExc_ValueError, callback_error_msg);
@@ -128,9 +133,12 @@ static PyObject* pyfsevents_schedule(PyObject* self, PyObject* args) {
     PyObject* stream;
     PyObject* paths;
     PyObject* callback;
+    FSEventStreamEventId lastid = kFSEventStreamEventIdSinceNow;
+    CFTimeInterval latency = 0.01;
+    FSEventStreamCreateFlags cflags = kFSEventStreamCreateFlagNone;
 
-    if (!PyArg_ParseTuple(args, "OOOO:schedule",
-                          &thread, &stream, &callback, &paths))
+    if (!PyArg_ParseTuple(args, "OOOO|KdK:schedule",
+                          &thread, &stream, &callback, &paths, &lastid, &latency, &cflags))
         return NULL;
 
     /* stream must not already have been scheduled */
@@ -168,9 +176,9 @@ static PyObject* pyfsevents_schedule(PyObject* self, PyObject* args) {
                                    (FSEventStreamCallback)&handler,
                                    &context,
                                    cfArray,
-                                   kFSEventStreamEventIdSinceNow,
-                                   0.01, // latency
-                                   kFSEventStreamCreateFlagNoDefer);
+                                   lastid,
+                                   latency, // latency
+                                   cflags);
     CFRelease(cfArray);
 
     PyObject* value = PyCapsule_New((void*) fsstream, NULL, NULL);
@@ -268,6 +276,41 @@ MOD_INIT(_fsevents) {
     PyModule_AddIntConstant(mod, "FS_ITEMISFILE", kFSEventStreamEventFlagItemIsFile);
     PyModule_AddIntConstant(mod, "FS_ITEMISDIR", kFSEventStreamEventFlagItemIsDir);
     PyModule_AddIntConstant(mod, "FS_ITEMISSYMLINK", kFSEventStreamEventFlagItemIsSymlink);
+
+    PyModule_AddIntConstant(mod, "FS_EVENTIDSINCENOW", kFSEventStreamEventIdSinceNow);
+
+    PyModule_AddIntConstant(mod, "FS_FLAGNONE", kFSEventStreamEventFlagNone);
+    PyModule_AddIntConstant(mod, "FS_FLAGMUSTSCANSUBDIRS", kFSEventStreamEventFlagMustScanSubDirs);
+    PyModule_AddIntConstant(mod, "FS_FLAGUSERDROPPED", kFSEventStreamEventFlagUserDropped);
+    PyModule_AddIntConstant(mod, "FS_FLAGKERNELDROPPED", kFSEventStreamEventFlagKernelDropped);
+    PyModule_AddIntConstant(mod, "FS_FLAGEVENTIDSWRAPPED", kFSEventStreamEventFlagEventIdsWrapped);
+    PyModule_AddIntConstant(mod, "FS_FLAGHISTORYDONE", kFSEventStreamEventFlagHistoryDone);
+    PyModule_AddIntConstant(mod, "FS_FLAGROOTCHANGED", kFSEventStreamEventFlagRootChanged);
+    PyModule_AddIntConstant(mod, "FS_FLAGMOUNT", kFSEventStreamEventFlagMount);
+    PyModule_AddIntConstant(mod, "FS_FLAGUNMOUNT", kFSEventStreamEventFlagUnmount);
+
+    PyModule_AddIntConstant(mod, "FS_CFLAGNONE", kFSEventStreamCreateFlagNone);
+    PyModule_AddIntConstant(mod, "FS_CFLAGUSECFTYPES", kFSEventStreamCreateFlagUseCFTypes);
+    PyModule_AddIntConstant(mod, "FS_CFLAGNODEFER", kFSEventStreamCreateFlagNoDefer);
+    PyModule_AddIntConstant(mod, "FS_CFLAGWATCHROOT", kFSEventStreamCreateFlagWatchRoot);
+    PyModule_AddIntConstant(mod, "FS_CFLAGIGNORESELF", kFSEventStreamCreateFlagIgnoreSelf);
+    PyModule_AddIntConstant(mod, "FS_CFLAGFILEEVENTS", kFSEventStreamCreateFlagFileEvents);
+
+
+//   /* These flags are only set if you specified the FileEvents */
+//   /* flags when creating the stream.*/
+//    PyModule_AddIntConstant(mod, "FS_FLAGITEMCREATED", kFSEventStreamEventFlagItemCreated);
+//    PyModule_AddIntConstant(mod, "FS_FLAGITEMREMOVED", kFSEventStreamEventFlagItemRemoved);
+//    PyModule_AddIntConstant(mod, "FS_FLAGITEMINODEMETAMOD", kFSEventStreamEventFlagItemInodeMetaMod);
+//    PyModule_AddIntConstant(mod, "FS_FLAGITEMRENAMED", kFSEventStreamEventFlagItemRenamed);
+//    PyModule_AddIntConstant(mod, "FS_FLAGITEMMODIFIED", kFSEventStreamEventFlagItemModified);
+//    PyModule_AddIntConstant(mod, "FS_FLAGITEMFINDERINFOMOD", kFSEventStreamEventFlagItemFinderInfoMod);
+//    PyModule_AddIntConstant(mod, "FS_FLAGITEMCHANGEDOWNER", kFSEventStreamEventFlagItemChangeOwner);
+//    PyModule_AddIntConstant(mod, "FS_FLAGITEMXATTRMOD", kFSEventStreamEventFlagItemXattrMod);
+//    PyModule_AddIntConstant(mod, "FS_FLAGITEMISFILE", kFSEventStreamEventFlagItemIsFile);
+//    PyModule_AddIntConstant(mod, "FS_FLAGITEMISDIR", kFSEventStreamEventFlagItemIsDir);
+//    PyModule_AddIntConstant(mod, "FS_FLAGITEMISSYMLINK", kFSEventStreamEventFlagItemIsSymlink);
+
     loops = PyDict_New();
     streams = PyDict_New();
 
