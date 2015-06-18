@@ -297,19 +297,6 @@ MOD_INIT(_fsevents) {
     PyModule_AddIntConstant(mod, "FS_CFLAGFILEEVENTS", kFSEventStreamCreateFlagFileEvents);
 
 
-//   /* These flags are only set if you specified the FileEvents */
-//   /* flags when creating the stream.*/
-//    PyModule_AddIntConstant(mod, "FS_FLAGITEMCREATED", kFSEventStreamEventFlagItemCreated);
-//    PyModule_AddIntConstant(mod, "FS_FLAGITEMREMOVED", kFSEventStreamEventFlagItemRemoved);
-//    PyModule_AddIntConstant(mod, "FS_FLAGITEMINODEMETAMOD", kFSEventStreamEventFlagItemInodeMetaMod);
-//    PyModule_AddIntConstant(mod, "FS_FLAGITEMRENAMED", kFSEventStreamEventFlagItemRenamed);
-//    PyModule_AddIntConstant(mod, "FS_FLAGITEMMODIFIED", kFSEventStreamEventFlagItemModified);
-//    PyModule_AddIntConstant(mod, "FS_FLAGITEMFINDERINFOMOD", kFSEventStreamEventFlagItemFinderInfoMod);
-//    PyModule_AddIntConstant(mod, "FS_FLAGITEMCHANGEDOWNER", kFSEventStreamEventFlagItemChangeOwner);
-//    PyModule_AddIntConstant(mod, "FS_FLAGITEMXATTRMOD", kFSEventStreamEventFlagItemXattrMod);
-//    PyModule_AddIntConstant(mod, "FS_FLAGITEMISFILE", kFSEventStreamEventFlagItemIsFile);
-//    PyModule_AddIntConstant(mod, "FS_FLAGITEMISDIR", kFSEventStreamEventFlagItemIsDir);
-//    PyModule_AddIntConstant(mod, "FS_FLAGITEMISSYMLINK", kFSEventStreamEventFlagItemIsSymlink);
 
     loops = PyDict_New();
     streams = PyDict_New();
