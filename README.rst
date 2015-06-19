@@ -85,11 +85,24 @@ To start the observer in the current thread, use the ``run`` method
 
   observer.run()
 
-The callback function will be called when an event occurs. A
-``FileEvent`` instance is passed to the callback and has 3 attributes:
-``mask``, ``cookie`` and ``name``. ``name`` parameter contains the path
-at which the event happened (may be a subdirectory) while ``mask``
-parameter is the event mask [#]_.
+The callback function will be called when an event occurs. 
+Depending on the stream, the callback will have different signitures:
+
+a) the standart stream (with callback and paths) will call callback with
+   parameters callback(path, mask) where path is the directory where a file 
+   changed and mask can be decoded using FS_FLAG* and FS_ITEM* constants [#]_.
+   a convenience class Mask has a __str__ function to get a text representation
+   of the flags.
+b) the stream is created with ``ids`` = True keyword parameter. In this case the call
+   is callback(path, mask, id). The id can be used in the ``since`` keyword
+   parameter of another stream object to also recieve historic events (that
+   happened before the stream became active)
+c) if ``file_events`` is kwarg set to True, a
+   ``FileEvent`` instance is passed to the callback and has 3 attributes:
+   ``mask``, ``cookie`` and ``name``. ``name`` parameter contains the path
+   at which the event happened (may be a subdirectory) while ``mask``
+   parameter is the event mask. this mimicks ``inotify`` behaviour. 
+   see also below.
 
 To stop observation, simply unschedule the stream and stop the
 observer::
