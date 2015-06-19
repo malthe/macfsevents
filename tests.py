@@ -343,6 +343,106 @@ class PathObservationTestCase(BaseTestCase):
 
         self.assertEqual(events, [])
 
+#new cflags and since field tests
+    def test_since_stream(self):
+        events = []
+        def callback(*args):
+            events.append(args)
+        
+        # two files in same directory
+        import os
+        path1 = os.path.realpath(self._make_tempdir()) + '/'
+        f = self._make_temporary(path1)[0]
+        g = self._make_temporary(path1)[0]
+
+        from fsevents import Stream, FS_FLAGHISTORYDONE
+        
+        stream = Stream(callback, path1, ids = True)
+        
+        from fsevents import Observer
+        observer = Observer()
+        observer.schedule(stream)
+        observer.start()
+        
+        #create one file
+        import time
+        while not observer.isAlive():
+            time.sleep(0.1)
+        del events[:]
+        f.close()
+        time.sleep(0.2)
+        
+        # stop and join observer
+        observer.stop()
+        observer.unschedule(stream)
+        observer.join()
+        self.assertEqual(len(events),1)
+        self.assertEqual(events[0][:-1], (path1, self.create_and_remove_mask))
+
+        #create a second file
+        g.close()
+           
+        stream = Stream(callback, path1, since = events[0][2])
+        del events[:]
+        # new observer
+        observer = Observer()
+        observer.schedule(stream)
+        observer.start()
+        time.sleep(0.2)
+
+        # stop and join observer
+        observer.stop()
+        observer.unschedule(stream)
+        observer.join()
+
+        self.assertEqual(len(events),2)
+        #FIXME: why do events arrive here in reversed order?            
+        self.assertEqual(events[1], (path1, self.create_and_remove_mask))
+        self.assertEqual(events[0], (path1[:-1], FS_FLAGHISTORYDONE))
+
+
+    def test_fileevent_stream(self):
+        events = []
+        def callback(*args):
+            events.append(args)
+        
+        # two files in same directory
+        import os
+        path1 = os.path.realpath(self._make_tempdir()) + '/'
+        f = self._make_temporary(path1)[0]
+        g = self._make_temporary(path1)[0]
+
+        from fsevents import Stream, FS_CFLAGFILEEVENTS, FS_ITEMISDIR
+        
+        stream = Stream(callback, path1, flags=FS_CFLAGFILEEVENTS)
+        
+        from fsevents import Observer
+        observer = Observer()
+        observer.schedule(stream)
+        observer.start()
+        
+        #create two files (here in the same directory)
+        import time
+        while not observer.isAlive():
+            time.sleep(0.1)
+        del events[:]
+        f.close()
+        g.close()
+        time.sleep(0.2)
+        
+        # stop and join observer
+        observer.stop()
+        observer.unschedule(stream)
+        observer.join()
+
+        import os
+        self.assertEqual(len(events),3)
+        self.assertEqual(events, [(path1[:-1], self.create_and_remove_mask|FS_ITEMISDIR),
+                                  (f.name, self.create_and_remove_mask),
+                                  (g.name, self.create_and_remove_mask)])
+    
+
+
 class FileObservationTestCase(BaseTestCase):
     def test_single_file_created(self):
         events = []
