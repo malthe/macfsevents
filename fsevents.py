@@ -44,6 +44,7 @@ from _fsevents import (
     )
 
 class Mask(int):
+    __slots__ = 'stringmap', 'svals'
     stringmap = {FS_FLAGMUSTSCANSUBDIRS:    'MustScanSubDirs',
                  FS_FLAGUSERDROPPED:        'UserDropped',
                  FS_FLAGKERNELDROPPED:      'KernelDropped',
@@ -136,7 +137,11 @@ class Observer(threading.Thread):
                 for path, mask, id in zip(paths, masks, ids):
                     if sys.version_info[0] >= 3:
                         path = path.decode('utf-8')
-                    stream.callback(path, Mask(mask), id)
+                    if stream.ids is False:
+                        stream.callback(path, mask)
+                    elif stream.ids is True:
+                        stream.callback(path, mask, id)
+            
         schedule(self, stream, callback, stream.paths, stream.since, stream.latency, stream.cflags)
 
     def schedule(self, stream):
@@ -177,6 +182,7 @@ class Stream(object):
         since = options.pop('since',FS_EVENTIDSINCENOW)
         cflags = options.pop('flags', FS_CFLAGNONE)
         latency = options.pop('latency', 0.01)
+        ids = options.pop('ids', False)
         assert len(options) == 0, "Invalid option(s): %s" % repr(options.keys())
         check_path_string_type(*paths)
 
@@ -193,6 +199,7 @@ class Stream(object):
         self.since = since
         self.cflags = cflags
         self.latency = latency
+        self.ids = ids
 
 class FileEvent(object):
     __slots__ = 'mask', 'cookie', 'name'
