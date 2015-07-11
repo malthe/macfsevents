@@ -1,6 +1,7 @@
 import os
 import sys
 import threading
+import unicodedata
 
 from _fsevents import (
     loop,
@@ -160,6 +161,11 @@ class FileEventCallback(object):
         created = {}
 
         for path in sorted(paths):
+            # supports UTF-8-MAC(NFD)
+            if not isinstance(path, unicode):
+                path = path.decode('utf-8')
+            path = unicodedata.normalize('NFD', path).encode('utf-8')
+
             if sys.version_info[0] >= 3:
                 path = path.decode('utf-8')
                 
