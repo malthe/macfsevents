@@ -33,6 +33,10 @@ IN_DELETE = 0x00000200
 IN_MOVED_FROM = 0x00000040
 IN_MOVED_TO = 0x00000080
 
+if sys.version_info[0] >= 3:
+    unicode = str
+
+
 def check_path_string_type(*paths):
     for path in paths:
         if not isinstance(path, str):
