@@ -1,6 +1,22 @@
 Changelog
 =========
 
+0.5 (2015-12-02)
+----------------
+
+- Fixed thread handling issue which might result in a segmentation
+  error.
+
+- Event IDs can be configure in the stream.
+
+- Added support for passing in create flags, latency and "since fields"
+  to the Stream.
+
+- Added flags translation facility.
+
+- Supports UTF-8-MAC(NFD).
+
+
 0.4 (2014-10-23)
 ----------------
 
