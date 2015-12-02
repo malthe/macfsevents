@@ -46,8 +46,6 @@ static void handler(FSEventStreamRef stream,
                     const uint64_t *eventIDs) {
   
     PyGILState_STATE state = PyGILState_Ensure();
-    PyThreadState *_save = PyEval_SaveThread();
-    PyEval_RestoreThread(info->state);
 
     /* convert event data to Python objects */
     PyObject *eventPathList = PyList_New(numEvents);
@@ -88,8 +86,7 @@ static void handler(FSEventStreamRef stream,
         /* stop listening */
         CFRunLoopStop(info->loop);
     }
-
-    PyThreadState_Swap(_save);
+    
     PyGILState_Release(state);
 }
 
@@ -97,8 +94,9 @@ static PyObject* pyfsevents_loop(PyObject* self, PyObject* args) {
     PyObject* thread;
     if (!PyArg_ParseTuple(args, "O:loop", &thread))
         return NULL;
-
-    PyEval_InitThreads();
+    if (! PyEval_ThreadsInitialized()) {
+        PyEval_InitThreads();
+    }
 
     /* allocate info and store thread state */
     PyObject* value = PyDict_GetItem(loops, thread);
