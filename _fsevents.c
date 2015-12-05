@@ -44,8 +44,10 @@ static void handler(FSEventStreamRef stream,
                     const char *const eventPaths[],
                     const FSEventStreamEventFlags *eventMasks,
                     const uint64_t *eventIDs) {
-  
+    PyThreadState *saved_thread_state = NULL;
+
     PyGILState_STATE state = PyGILState_Ensure();
+    saved_thread_state = PyThreadState_Swap(info->state);
 
     /* convert event data to Python objects */
     PyObject *eventPathList = PyList_New(numEvents);
@@ -86,7 +88,8 @@ static void handler(FSEventStreamRef stream,
         /* stop listening */
         CFRunLoopStop(info->loop);
     }
-    
+
+    PyThreadState_Swap(saved_thread_state);
     PyGILState_Release(state);
 }
 
