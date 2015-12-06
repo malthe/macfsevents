@@ -72,15 +72,16 @@ class Mask(int):
 
     svals = list(stringmap.keys())
     svals.sort()
+
     def __str__(self):
-        res = ''
+        vals = []
         for k in self.svals:
-            if self&k:
-                res += self.stringmap[k] + '|'
-        res = res[:-1]
-        res = '['+res+']'
-        return res
-        
+            if self & k:
+                vals.append(self.stringmap[k])
+
+        res = "[" + "|".join(vals) + "]"
+
+
 # inotify event flags
 IN_MODIFY = 0x00000002
 IN_ATTRIB = 0x00000004
