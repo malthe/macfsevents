@@ -1,7 +1,8 @@
 Changelog
 =========
 
-In next release ...
+0.6 (2015-12-06)
+----------------
 
 - Fixed mask serialization on Python 3.
 
