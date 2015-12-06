@@ -46,27 +46,29 @@ from _fsevents import (
 
 class Mask(int):
     __slots__ = 'stringmap', 'svals'
-    stringmap = {FS_FLAGMUSTSCANSUBDIRS:    'MustScanSubDirs',
-                 FS_FLAGUSERDROPPED:        'UserDropped',
-                 FS_FLAGKERNELDROPPED:      'KernelDropped',
-                 FS_FLAGEVENTIDSWRAPPED:    'EventIDsWrapped',
-                 FS_FLAGHISTORYDONE:        'HistoryDone',
-                 FS_FLAGROOTCHANGED:        'RootChanged',
-                 FS_FLAGMOUNT:              'Mount',
-                 FS_FLAGUNMOUNT:            'Unmount',
-            #         /* flags when creating the stream.*/
-                 FS_ITEMCREATED:            'ItemCreated',
-                 FS_ITEMREMOVED:            'ItemRemoved',
-                 FS_ITEMINODEMETAMOD:       'ItemInodeMetaMod',
-                 FS_ITEMRENAMED:            'ItemRenamed',
-                 FS_ITEMMODIFIED:           'ItemModified',
-                 FS_ITEMFINDERINFOMOD:      'ItemFinderInfoMod',
-                 FS_ITEMCHANGEOWNER:        'ItemChangedOwner',
-                 FS_ITEMXATTRMOD:           'ItemXAttrMod',
-                 FS_ITEMISFILE:             'ItemIsFile',
-                 FS_ITEMISDIR:              'ItemIsDir',
-                 FS_ITEMISSYMLINK:          'ItemIsSymlink'
-                 }
+    stringmap = {
+        FS_FLAGMUSTSCANSUBDIRS:    'MustScanSubDirs',
+        FS_FLAGUSERDROPPED:        'UserDropped',
+        FS_FLAGKERNELDROPPED:      'KernelDropped',
+        FS_FLAGEVENTIDSWRAPPED:    'EventIDsWrapped',
+        FS_FLAGHISTORYDONE:        'HistoryDone',
+        FS_FLAGROOTCHANGED:        'RootChanged',
+        FS_FLAGMOUNT:              'Mount',
+        FS_FLAGUNMOUNT:            'Unmount',
+
+        # Flags when creating the stream.
+        FS_ITEMCREATED:            'ItemCreated',
+        FS_ITEMREMOVED:            'ItemRemoved',
+        FS_ITEMINODEMETAMOD:       'ItemInodeMetaMod',
+        FS_ITEMRENAMED:            'ItemRenamed',
+        FS_ITEMMODIFIED:           'ItemModified',
+        FS_ITEMFINDERINFOMOD:      'ItemFinderInfoMod',
+        FS_ITEMCHANGEOWNER:        'ItemChangedOwner',
+        FS_ITEMXATTRMOD:           'ItemXAttrMod',
+        FS_ITEMISFILE:             'ItemIsFile',
+        FS_ITEMISDIR:              'ItemIsDir',
+        FS_ITEMISSYMLINK:          'ItemIsSymlink'
+    }
 
     svals = stringmap.keys()
     svals.sort()
