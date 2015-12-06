@@ -70,9 +70,8 @@ class Mask(int):
         FS_ITEMISSYMLINK:          'ItemIsSymlink'
     }
 
-    svals = stringmap.keys()
+    svals = list(stringmap.keys())
     svals.sort()
-    
     def __str__(self):
         res = ''
         for k in self.svals:
