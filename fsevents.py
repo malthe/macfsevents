@@ -45,7 +45,8 @@ from _fsevents import (
     )
 
 class Mask(int):
-    __slots__ = 'stringmap', 'svals'
+    __slots__ = ()
+
     stringmap = {
         FS_FLAGMUSTSCANSUBDIRS:    'MustScanSubDirs',
         FS_FLAGUSERDROPPED:        'UserDropped',
