@@ -11,7 +11,7 @@ python:
 - 3.5
 
 script:
-- ./setup.py build test
+- python setup.py build test
 
 notifications:
   email:
