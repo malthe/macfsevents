@@ -91,12 +91,12 @@ To start the observer in the current thread, use the ``run`` method
 The callback function will be called when an event occurs. 
 Depending on the stream, the callback will have different signitures:
 
-a) the standart stream (with callback and paths) will call callback with
+a) the standard stream (with callback and paths) will call callback with
    parameters callback(path, mask) where path is the directory where a file 
    changed and mask can be decoded using FS_FLAG* and FS_ITEM* constants [#]_.
    a convenience class Mask has a __str__ function to get a text representation
    of the flags.
-b) the stream is created with ``ids`` = True keyword parameter. In this case the call
+b) the stream is created with ``ids = True`` keyword parameter. In this case the call
    is callback(path, mask, id). The id can be used in the ``since`` keyword
    parameter of another stream object to also recieve historic events (that
    happened before the stream became active)
