@@ -22,10 +22,8 @@ from _fsevents import (
     FS_ITEMXATTRMOD,
     FS_ITEMISFILE,
     FS_ITEMISDIR,
-    FS_ITEMISSYMLINK,  
-
+    FS_ITEMISSYMLINK,
     FS_EVENTIDSINCENOW,
-    
     FS_FLAGEVENTIDSWRAPPED,
     FS_FLAGNONE,
     FS_FLAGHISTORYDONE,
@@ -35,17 +33,15 @@ from _fsevents import (
     FS_FLAGMOUNT,
     FS_FLAGUSERDROPPED,
     FS_FLAGMUSTSCANSUBDIRS,
-
     FS_CFLAGFILEEVENTS,
     FS_CFLAGNONE,
     FS_CFLAGIGNORESELF,
     FS_CFLAGUSECFTYPES,
     FS_CFLAGNODEFER,
     FS_CFLAGWATCHROOT,
-    )
+)
 
 class Mask(int):
-
     stringmap = {
         FS_FLAGMUSTSCANSUBDIRS:    'MustScanSubDirs',
         FS_FLAGUSERDROPPED:        'UserDropped',
@@ -70,14 +66,16 @@ class Mask(int):
         FS_ITEMISSYMLINK:          'ItemIsSymlink'
     }
 
-    svals = list(stringmap.keys())
-    svals.sort()
+    _svals = list(stringmap.items())
+    _svals.sort()
+
+    del stringmap
 
     def __str__(self):
         vals = []
-        for k in self.svals:
+        for k, s in self._svals:
             if self & k:
-                vals.append(self.stringmap[k])
+                vals.append(s)
 
         res = "[" + "|".join(vals) + "]"
 
