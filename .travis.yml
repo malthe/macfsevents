@@ -1,6 +1,8 @@
 sudo: false
 osx_image: xcode7.1
 
+language: objective-c
+
 before_install:
 - brew install python3
 
