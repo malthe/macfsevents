@@ -1,4 +1,5 @@
 sudo: false
+osx_image: xcode7.1
 
 language: python
 python:
