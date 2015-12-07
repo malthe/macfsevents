@@ -17,6 +17,9 @@ Requirements:
 This software was written by Malthe Borch <mborch@gmail.com>. The
 :mod:`pyfsevents` module by Nicolas Dumazet was used for reference.
 
+.. image:: https://travis-ci.org/malthe/macfsevents.svg
+    :target: https://travis-ci.org/malthe/macfsevents
+
 Why?
 ----
 
