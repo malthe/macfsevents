@@ -1,8 +1,10 @@
 Changelog
 =========
 
-In next release ...
+0.7 (2015-12-18)
+----------------
 
+- Remove slots definition.
 
 0.6 (2015-12-06)
 ----------------
