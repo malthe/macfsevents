@@ -30,7 +30,7 @@ setup(name = "MacFSEvents",
       classifiers = [
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License',
+        'License :: OSI Approved :: BSD License',
         'Operating System :: MacOS :: MacOS X',
         'Programming Language :: C',
         'Programming Language :: Python :: 2.4',
