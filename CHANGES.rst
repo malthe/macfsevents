@@ -1,6 +1,9 @@
 Changelog
 =========
 
+- Fix bug that could lead to a segfault.
+  [ElonKim]
+  
 0.7 (2015-12-18)
 ----------------
 
