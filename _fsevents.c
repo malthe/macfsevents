@@ -135,7 +135,7 @@ static PyObject* pyfsevents_schedule(PyObject* self, PyObject* args) {
     CFTimeInterval latency = 0.01;
     FSEventStreamCreateFlags cflags = kFSEventStreamCreateFlagNone;
 
-    if (!PyArg_ParseTuple(args, "OOOO|KdK:schedule",
+    if (!PyArg_ParseTuple(args, "OOOO|KdI:schedule",
                           &thread, &stream, &callback, &paths, &lastid, &latency, &cflags))
         return NULL;
 
