@@ -77,7 +77,7 @@ class Mask(int):
             if self & k:
                 vals.append(s)
 
-        res = "[" + "|".join(vals) + "]"
+        return "[" + "|".join(vals) + "]"
 
 
 # inotify event flags
