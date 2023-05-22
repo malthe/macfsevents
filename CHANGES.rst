@@ -1,9 +1,10 @@
 Changelog
 =========
 
-In next release ...
+0.8.2 (2023-05-22)
+------------------
 
--
+- Fix file mask string method missing return value (#43).
 
 0.8.1 (2018-02-21)
 ------------------
