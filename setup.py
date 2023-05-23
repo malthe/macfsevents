@@ -17,11 +17,12 @@ ext_modules = [
     ]
 
 setup(name = "MacFSEvents",
-      version = "0.8.3",
+      version = "0.8.4",
       description = "Thread-based interface to file system observation primitives.",
       long_description = "\n\n".join((read('README.rst'), read('CHANGES.rst'))),
       license = "BSD",
       data_files = [("", [
+          "compat.h",
           "LICENSE.txt",
           "CHANGES.rst"
       ])],
@@ -41,8 +42,10 @@ setup(name = "MacFSEvents",
         'Programming Language :: Python :: 2.5',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.2',
-        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: System :: Filesystems',
       ],

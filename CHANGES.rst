@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.8.4 (2023-05-23)
+------------------
+
+- Fix test compatibility with newer Python 3.
+
 0.8.3 (2023-05-23)
 ------------------
 

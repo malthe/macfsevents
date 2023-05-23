@@ -62,7 +62,7 @@ class PathObservationTestCase(BaseTestCase):
 
         # add single file
         import time
-        while not observer.isAlive():
+        while not observer.is_alive():
             time.sleep(0.1)
         del events[:]
         f.close()
@@ -87,7 +87,7 @@ class PathObservationTestCase(BaseTestCase):
 
         # wait until activation
         import time
-        while not observer.isAlive():
+        while not observer.is_alive():
             time.sleep(0.1)
         time.sleep(0.1)
 
@@ -141,7 +141,7 @@ class PathObservationTestCase(BaseTestCase):
 
         # add single file
         import time
-        while not observer.isAlive():
+        while not observer.is_alive():
             time.sleep(0.1)
         time.sleep(0.1)
         del events[:]
@@ -169,7 +169,7 @@ class PathObservationTestCase(BaseTestCase):
         observer = Observer()
         observer.start()
         import time
-        while not observer.isAlive():
+        while not observer.is_alive():
             time.sleep(0.1)
 
         observer.schedule(stream)
@@ -200,7 +200,7 @@ class PathObservationTestCase(BaseTestCase):
         observer.start()
 
         import time
-        while not observer.isAlive():
+        while not observer.is_alive():
             time.sleep(0.1)
 
         observer.schedule(stream)
@@ -240,7 +240,7 @@ class PathObservationTestCase(BaseTestCase):
             observer.start()
 
             # add single file
-            while not observer.isAlive():
+            while not observer.is_alive():
                 time.sleep(0.1)
             del events[:]
             f = open(os.path.join(subdirectory, "test"), "w")
@@ -276,7 +276,7 @@ class PathObservationTestCase(BaseTestCase):
 
         # add single file
         import time
-        while not observer.isAlive():
+        while not observer.is_alive():
             time.sleep(0.1)
         del events[:]
         f.close()
@@ -305,7 +305,7 @@ class PathObservationTestCase(BaseTestCase):
 
         # add single file
         import time
-        while not observer.isAlive():
+        while not observer.is_alive():
             time.sleep(0.1)
         del events[:]
         f.close()
@@ -331,7 +331,7 @@ class PathObservationTestCase(BaseTestCase):
 
         # add single file
         import time
-        while not observer.isAlive():
+        while not observer.is_alive():
             time.sleep(0.1)
         del events[:]
         f.close()
@@ -366,7 +366,7 @@ class PathObservationTestCase(BaseTestCase):
         
         #create one file
         import time
-        while not observer.isAlive():
+        while not observer.is_alive():
             time.sleep(0.1)
         del events[:]
         f.close()
@@ -423,7 +423,7 @@ class PathObservationTestCase(BaseTestCase):
         
         #create two files (here in the same directory)
         import time
-        while not observer.isAlive():
+        while not observer.is_alive():
             time.sleep(0.1)
         del events[:]
         f.close()
@@ -459,7 +459,7 @@ class FileObservationTestCase(BaseTestCase):
 
         # add single file
         import time
-        while not observer.isAlive():
+        while not observer.is_alive():
             time.sleep(0.1)
         del events[:]
         time.sleep(0.1)
@@ -501,7 +501,7 @@ class FileObservationTestCase(BaseTestCase):
 
         # add single file
         import time
-        while not observer.isAlive():
+        while not observer.is_alive():
             time.sleep(0.1)
         del events[:]
         time.sleep(2.1)
@@ -538,7 +538,7 @@ class FileObservationTestCase(BaseTestCase):
 
         # add single file
         import time
-        while not observer.isAlive():
+        while not observer.is_alive():
             time.sleep(0.1)
         del events[:]
         time.sleep(2.1)
@@ -580,7 +580,7 @@ class FileObservationTestCase(BaseTestCase):
 
         # add single file
         import time
-        while not observer.isAlive():
+        while not observer.is_alive():
             time.sleep(0.1)
         del events[:]
         time.sleep(2.1)
@@ -615,7 +615,7 @@ class FileObservationTestCase(BaseTestCase):
 
         # add single file
         import time
-        while not observer.isAlive():
+        while not observer.is_alive():
             time.sleep(0.1)
         del events[:]
         time.sleep(2.1)
@@ -668,7 +668,7 @@ class FileObservationTestCase(BaseTestCase):
 
             # add single file
             import time
-            while not observer.isAlive():
+            while not observer.is_alive():
                 time.sleep(0.1)
             del events[:]
             time.sleep(0.1)
@@ -704,7 +704,7 @@ class FileObservationTestCase(BaseTestCase):
         observer.start()
 
         import time
-        while not observer.isAlive():
+        while not observer.is_alive():
             time.sleep(0.1)
         del events[:]
         time.sleep(1)
