@@ -21,7 +21,10 @@ setup(name = "MacFSEvents",
       description = "Thread-based interface to file system observation primitives.",
       long_description = "\n\n".join((read('README.rst'), read('CHANGES.rst'))),
       license = "BSD",
-      data_files = [("", ["LICENSE.txt", "CHANGES.rst"])],
+      data_files = [("", [
+          "LICENSE.txt",
+          "CHANGES.rst"
+      ])],
       author = "Malthe Borch",
       author_email = "mborch@gmail.com",
       url = 'https://github.com/malthe/macfsevents',
