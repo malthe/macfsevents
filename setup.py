@@ -1,8 +1,9 @@
 import os
 
-from setuptools.extension import Extension
-from setuptools.command.build_ext import build_ext
 from setuptools import setup
+from setuptools.command.build_ext import build_ext
+from setuptools.extension import Extension
+
 
 def read(fname):
     with open(os.path.join(os.path.dirname(__file__), fname)) as f:

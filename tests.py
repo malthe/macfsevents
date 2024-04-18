@@ -1,5 +1,6 @@
 import unittest
 
+
 class BaseTestCase(unittest.TestCase):
     def setUp(self):
         self.tempdir = self._make_tempdir()
@@ -355,7 +356,7 @@ class PathObservationTestCase(BaseTestCase):
         f = self._make_temporary(path1)[0]
         g = self._make_temporary(path1)[0]
 
-        from fsevents import Stream, FS_FLAGHISTORYDONE
+        from fsevents import FS_FLAGHISTORYDONE, Stream
         
         stream = Stream(callback, path1, ids = True)
         
@@ -412,7 +413,7 @@ class PathObservationTestCase(BaseTestCase):
         f = self._make_temporary(path1)[0]
         g = self._make_temporary(path1)[0]
 
-        from fsevents import Stream, FS_CFLAGFILEEVENTS, FS_ITEMISDIR
+        from fsevents import FS_CFLAGFILEEVENTS, FS_ITEMISDIR, Stream
         
         stream = Stream(callback, path1, flags=FS_CFLAGFILEEVENTS)
         
@@ -552,8 +553,7 @@ class FileObservationTestCase(BaseTestCase):
         observer.join()
 
         os.unlink(new)
-        from fsevents import IN_MOVED_FROM
-        from fsevents import IN_MOVED_TO
+        from fsevents import IN_MOVED_FROM, IN_MOVED_TO
         self.assertEqual(len(events), 2)
         self.assertEqual(events[0].mask, IN_MOVED_FROM)
         self.assertEqual(events[0].name, os.path.realpath(f.name))
@@ -689,7 +689,8 @@ class FileObservationTestCase(BaseTestCase):
 
     def test_existing_directories_are_not_reported(self):
         import os
-        from fsevents import Stream, Observer
+
+        from fsevents import Observer, Stream
 
         events = []
         def callback(event):
