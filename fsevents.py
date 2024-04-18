@@ -4,6 +4,7 @@ import threading
 import unicodedata
 
 from _fsevents import (
+    FS_CFLAGFILEEVENTS,
     FS_CFLAGNONE,
     FS_EVENTIDSINCENOW,
     FS_FLAGEVENTIDSWRAPPED,
@@ -320,3 +321,32 @@ class FileEventCallback(object):
                     entry[obj] = os.lstat(os.path.join(root, obj))
                 except OSError:
                     continue
+
+
+__all__ = (
+    FS_CFLAGFILEEVENTS,
+    FS_CFLAGNONE,
+    FS_EVENTIDSINCENOW,
+    FS_FLAGEVENTIDSWRAPPED,
+    FS_FLAGHISTORYDONE,
+    FS_FLAGKERNELDROPPED,
+    FS_FLAGMOUNT,
+    FS_FLAGMUSTSCANSUBDIRS,
+    FS_FLAGROOTCHANGED,
+    FS_FLAGUNMOUNT,
+    FS_FLAGUSERDROPPED,
+    FS_ITEMCHANGEOWNER,
+    FS_ITEMCREATED,
+    FS_ITEMFINDERINFOMOD,
+    FS_ITEMINODEMETAMOD,
+    FS_ITEMISDIR,
+    FS_ITEMISFILE,
+    FS_ITEMISSYMLINK,
+    FS_ITEMMODIFIED,
+    FS_ITEMREMOVED,
+    FS_ITEMRENAMED,
+    FS_ITEMXATTRMOD,
+    FileEvent,
+    Stream,
+    Observer,
+)
