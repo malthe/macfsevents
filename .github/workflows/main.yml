@@ -1,0 +1,57 @@
+on:
+  push:
+  pull_request:
+  # Allow to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v3
+    - run: python -m pip install setuptools wheel
+    - run: python setup.py sdist
+    - run: python setup.py bdist_wheel
+    - uses: actions/upload-artifact@v4
+      with:
+        name: MacFSEvents
+        path: ./dist/
+  test:
+    strategy:
+      # We want to see all failures:
+      fail-fast: false
+      matrix:
+        config:
+        - ["3.8",  "py38",      "macos-12"]
+        - ["3.9",  "py38",      "macos-12"]
+        - ["3.9",  "lint",      "macos-12"]
+        - ["3.9",  "py39",      "macos-12"]
+        - ["3.10", "py310",     "macos-12"]
+        - ["3.11", "py311",     "macos-12"]
+        - ["3.12", "py312",     "macos-12"]
+        - ["3.12", "py312",     "macos-13"]
+        - ["3.12", "py312",     "macos-14"]
+    runs-on: ${{ matrix.config[2] }}
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
+    name: ${{ matrix.config[0] }}-${{ matrix.config[1] }}-${{ matrix.config[2] }}
+    steps:
+    - run: git config --global core.autocrlf false
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.config[0] }}
+    - name: Pip cache
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ matrix.config[0] }}-${{ hashFiles('setup.*', 'tox.ini') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-${{ matrix.config[0] }}-
+          ${{ runner.os }}-pip-
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install tox
+    - name: Test
+      run: tox -e ${{ matrix.config[1] }}

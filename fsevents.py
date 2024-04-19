@@ -4,66 +4,57 @@ import threading
 import unicodedata
 
 from _fsevents import (
-    loop,
-    stop,
-    schedule,
-    unschedule,
-    CF_POLLIN,
-    CF_POLLOUT,
-    FS_IGNORESELF,
-    FS_FILEEVENTS,
-    FS_ITEMCREATED,
-    FS_ITEMREMOVED,
-    FS_ITEMINODEMETAMOD,
-    FS_ITEMRENAMED,
-    FS_ITEMMODIFIED,
-    FS_ITEMFINDERINFOMOD,
-    FS_ITEMCHANGEOWNER,
-    FS_ITEMXATTRMOD,
-    FS_ITEMISFILE,
-    FS_ITEMISDIR,
-    FS_ITEMISSYMLINK,
-    FS_EVENTIDSINCENOW,
-    FS_FLAGEVENTIDSWRAPPED,
-    FS_FLAGNONE,
-    FS_FLAGHISTORYDONE,
-    FS_FLAGROOTCHANGED,
-    FS_FLAGKERNELDROPPED,
-    FS_FLAGUNMOUNT,
-    FS_FLAGMOUNT,
-    FS_FLAGUSERDROPPED,
-    FS_FLAGMUSTSCANSUBDIRS,
     FS_CFLAGFILEEVENTS,
     FS_CFLAGNONE,
-    FS_CFLAGIGNORESELF,
-    FS_CFLAGUSECFTYPES,
-    FS_CFLAGNODEFER,
-    FS_CFLAGWATCHROOT,
+    FS_EVENTIDSINCENOW,
+    FS_FLAGEVENTIDSWRAPPED,
+    FS_FLAGHISTORYDONE,
+    FS_FLAGKERNELDROPPED,
+    FS_FLAGMOUNT,
+    FS_FLAGMUSTSCANSUBDIRS,
+    FS_FLAGROOTCHANGED,
+    FS_FLAGUNMOUNT,
+    FS_FLAGUSERDROPPED,
+    FS_ITEMCHANGEOWNER,
+    FS_ITEMCREATED,
+    FS_ITEMFINDERINFOMOD,
+    FS_ITEMINODEMETAMOD,
+    FS_ITEMISDIR,
+    FS_ITEMISFILE,
+    FS_ITEMISSYMLINK,
+    FS_ITEMMODIFIED,
+    FS_ITEMREMOVED,
+    FS_ITEMRENAMED,
+    FS_ITEMXATTRMOD,
+    loop,
+    schedule,
+    stop,
+    unschedule
 )
+
 
 class Mask(int):
     stringmap = {
-        FS_FLAGMUSTSCANSUBDIRS:    'MustScanSubDirs',
-        FS_FLAGUSERDROPPED:        'UserDropped',
-        FS_FLAGKERNELDROPPED:      'KernelDropped',
-        FS_FLAGEVENTIDSWRAPPED:    'EventIDsWrapped',
-        FS_FLAGHISTORYDONE:        'HistoryDone',
-        FS_FLAGROOTCHANGED:        'RootChanged',
-        FS_FLAGMOUNT:              'Mount',
-        FS_FLAGUNMOUNT:            'Unmount',
-
+        FS_FLAGMUSTSCANSUBDIRS: "MustScanSubDirs",
+        FS_FLAGUSERDROPPED: "UserDropped",
+        FS_FLAGKERNELDROPPED: "KernelDropped",
+        FS_FLAGEVENTIDSWRAPPED: "EventIDsWrapped",
+        FS_FLAGHISTORYDONE: "HistoryDone",
+        FS_FLAGROOTCHANGED: "RootChanged",
+        FS_FLAGMOUNT: "Mount",
+        FS_FLAGUNMOUNT: "Unmount",
         # Flags when creating the stream.
-        FS_ITEMCREATED:            'ItemCreated',
-        FS_ITEMREMOVED:            'ItemRemoved',
-        FS_ITEMINODEMETAMOD:       'ItemInodeMetaMod',
-        FS_ITEMRENAMED:            'ItemRenamed',
-        FS_ITEMMODIFIED:           'ItemModified',
-        FS_ITEMFINDERINFOMOD:      'ItemFinderInfoMod',
-        FS_ITEMCHANGEOWNER:        'ItemChangedOwner',
-        FS_ITEMXATTRMOD:           'ItemXAttrMod',
-        FS_ITEMISFILE:             'ItemIsFile',
-        FS_ITEMISDIR:              'ItemIsDir',
-        FS_ITEMISSYMLINK:          'ItemIsSymlink'
+        FS_ITEMCREATED: "ItemCreated",
+        FS_ITEMREMOVED: "ItemRemoved",
+        FS_ITEMINODEMETAMOD: "ItemInodeMetaMod",
+        FS_ITEMRENAMED: "ItemRenamed",
+        FS_ITEMMODIFIED: "ItemModified",
+        FS_ITEMFINDERINFOMOD: "ItemFinderInfoMod",
+        FS_ITEMCHANGEOWNER: "ItemChangedOwner",
+        FS_ITEMXATTRMOD: "ItemXAttrMod",
+        FS_ITEMISFILE: "ItemIsFile",
+        FS_ITEMISDIR: "ItemIsDir",
+        FS_ITEMISSYMLINK: "ItemIsSymlink",
     }
 
     _svals = list(stringmap.items())
@@ -96,7 +87,8 @@ def check_path_string_type(*paths):
     for path in paths:
         if not isinstance(path, str):
             raise TypeError(
-                "Path must be string, not '%s'." % type(path).__name__)
+                "Path must be string, not '%s'." % type(path).__name__
+            )
 
 
 class Observer(threading.Thread):
@@ -138,16 +130,25 @@ class Observer(threading.Thread):
         if stream.file_events:
             callback = FileEventCallback(stream.callback, stream.raw_paths)
         else:
+
             def callback(paths, masks, ids):
                 for path, mask, id in zip(paths, masks, ids):
                     if sys.version_info[0] >= 3:
-                        path = path.decode('utf-8')
+                        path = path.decode("utf-8")
                     if stream.ids is False:
                         stream.callback(path, mask)
                     elif stream.ids is True:
                         stream.callback(path, mask, id)
-            
-        schedule(self, stream, callback, stream.paths, stream.since, stream.latency, stream.cflags)
+
+        schedule(
+            self,
+            stream,
+            callback,
+            stream.paths,
+            stream.since,
+            stream.latency,
+            stream.cflags,
+        )
 
     def schedule(self, stream):
         self.lock.acquire()
@@ -181,14 +182,17 @@ class Observer(threading.Thread):
             self.event = None
             event.set()
 
+
 class Stream(object):
     def __init__(self, callback, *paths, **options):
-        file_events = options.pop('file_events', False)
-        since = options.pop('since',FS_EVENTIDSINCENOW)
-        cflags = options.pop('flags', FS_CFLAGNONE)
-        latency = options.pop('latency', 0.01)
-        ids = options.pop('ids', False)
-        assert len(options) == 0, "Invalid option(s): %s" % repr(options.keys())
+        file_events = options.pop("file_events", False)
+        since = options.pop("since", FS_EVENTIDSINCENOW)
+        cflags = options.pop("flags", FS_CFLAGNONE)
+        latency = options.pop("latency", 0.01)
+        ids = options.pop("ids", False)
+        assert len(options) == 0, "Invalid option(s): %s" % repr(
+            options.keys()
+        )
         check_path_string_type(*paths)
 
         self.callback = callback
@@ -196,8 +200,8 @@ class Stream(object):
 
         # The C-extension needs the path in 8-bit form.
         self.paths = [
-            path if isinstance(path, bytes) 
-            else path.encode('utf-8') for path in paths
+            path if isinstance(path, bytes) else path.encode("utf-8")
+            for path in paths
         ]
 
         self.file_events = file_events
@@ -206,8 +210,9 @@ class Stream(object):
         self.latency = latency
         self.ids = ids
 
+
 class FileEvent(object):
-    __slots__ = 'mask', 'cookie', 'name'
+    __slots__ = "mask", "cookie", "name"
 
     def __init__(self, mask, cookie, name):
         self.mask = mask
@@ -216,6 +221,7 @@ class FileEvent(object):
 
     def __repr__(self):
         return repr((self.mask, self.cookie, self.name))
+
 
 class FileEventCallback(object):
     def __init__(self, callback, paths):
@@ -234,13 +240,13 @@ class FileEventCallback(object):
         for path in sorted(paths):
             # supports UTF-8-MAC(NFD)
             if not isinstance(path, unicode):
-                path = path.decode('utf-8')
-            path = unicodedata.normalize('NFD', path).encode('utf-8')
+                path = path.decode("utf-8")
+            path = unicodedata.normalize("NFD", path).encode("utf-8")
 
             if sys.version_info[0] >= 3:
-                path = path.decode('utf-8')
-                
-            path = path.rstrip('/')
+                path = path.decode("utf-8")
+
+            path = path.rstrip("/")
             snapshot = self.snapshots[path]
             current = {}
             try:
@@ -265,13 +271,15 @@ class FileEventCallback(object):
                     observed.discard(name)
                 else:
                     event = created.get(snap_stat.st_ino)
-                    if (event is not None):
+                    if event is not None:
                         self.cookie += 1
                         event.mask = IN_MOVED_FROM
                         event.cookie = self.cookie
                         tmp_filename = event.name
                         event.name = filename
-                        events.append(FileEvent(IN_MOVED_TO, self.cookie, tmp_filename))
+                        events.append(
+                            FileEvent(IN_MOVED_TO, self.cookie, tmp_filename)
+                        )
                     else:
                         event = FileEvent(IN_DELETE, None, filename)
                         deleted[snap_stat.st_ino] = event
@@ -313,3 +321,32 @@ class FileEventCallback(object):
                     entry[obj] = os.lstat(os.path.join(root, obj))
                 except OSError:
                     continue
+
+
+__all__ = (
+    FS_CFLAGFILEEVENTS,
+    FS_CFLAGNONE,
+    FS_EVENTIDSINCENOW,
+    FS_FLAGEVENTIDSWRAPPED,
+    FS_FLAGHISTORYDONE,
+    FS_FLAGKERNELDROPPED,
+    FS_FLAGMOUNT,
+    FS_FLAGMUSTSCANSUBDIRS,
+    FS_FLAGROOTCHANGED,
+    FS_FLAGUNMOUNT,
+    FS_FLAGUSERDROPPED,
+    FS_ITEMCHANGEOWNER,
+    FS_ITEMCREATED,
+    FS_ITEMFINDERINFOMOD,
+    FS_ITEMINODEMETAMOD,
+    FS_ITEMISDIR,
+    FS_ITEMISFILE,
+    FS_ITEMISSYMLINK,
+    FS_ITEMMODIFIED,
+    FS_ITEMREMOVED,
+    FS_ITEMRENAMED,
+    FS_ITEMXATTRMOD,
+    FileEvent,
+    Stream,
+    Observer,
+)
